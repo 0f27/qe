@@ -14,6 +14,16 @@ Quickly create and image and start VM installation:
 qe ubuntu.vdi ~/Downloads/ubuntu.iso
 ```
 
+Generate Qemu command with `-n` option:
+
+```bash
+qe windows-server-2022.qcow2 -n
+
+```
+```
+qemu-system-x86_64 -enable-kvm -smp 2 -m 4G -bios /usr/share/ovmf/x64/OVMF.fd -drive file=windows-server-2022.qcow2,format=qcow2,index=0,media=disk -display sdl
+```
+
 ## Features
 
 - Defaults for CPU and memory. You can still use `-m` or `-smp` to specify your own
