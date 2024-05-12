@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 
 import os
+import json
 from platform import machine, system
 from subprocess import run
 import argparse
 from multiprocessing import cpu_count
 
 os_family = system().lower()
-if os_family != "linux":
-    from psutil import virtual_memory
 
 usage = """
 Usage: qe [images] (script options) (other qemu params)
@@ -32,16 +31,28 @@ Script options:
 You can also use all available qemu-system-x86_64 parameters
 """
 
-# not implemented, not used
-# just note for myself
-# to implement saving to and reading from yaml
-defaults = {
-    "memory": "3G",
-    "cpu_cores": "2",
-    "image_size_to_create": "40G",
-    "ports_to_forward": ["443", "80", "22"],
-}
+# setting defaults
+config_folder = os.path.expanduser("~/.config/qe")
+config_path = config_folder + "/config.json"
+if os.path.exists(config_path):
+    with open(config_path, "r") as f:
+        defaults = json.load(f)
+    # TODO - checknif all fields set
+else:
+    if not os.path.exists(config_folder):
+        os.mkdir(config_folder)
+    defaults = {
+        "memory": "3G",
+        "cpu_cores": "2",
+        "image_size_to_create": "40G",
+        "ports_prefix": "99",
+        "ports_to_forward": ["443", "80", "22"],
+        "download_ovmf": False,
+    }
+    with open(config_path, "w") as f:
+        f.write(json.dumps(defaults, indent=2))
 
+# parsing arguments
 parser = argparse.ArgumentParser()
 parser.add_argument(
     "-i",
@@ -131,6 +142,7 @@ def invert_bools(func):
 
 is_not_image = invert_bools(is_image)
 
+# finding all images in args
 disk_images = list(filter(is_image, not_argparsed[1:]))
 other_args = list(filter(is_not_image, not_argparsed[1:]))
 qemu_args = [e for e in other_args if e not in options]
@@ -148,39 +160,24 @@ for i, image in enumerate(disk_images):
             subformat = ["-o", "static=on"]
         else:
             subformat = []
-        run(["qemu-img", "create", "-f", format] + subformat + [image, "40G"])
+        run(
+            ["qemu-img", "create", "-f", format]
+            + subformat
+            + [image, defaults["image_size_to_create"]]
+        )
     drive += ["-drive", f"file={image},format={format},index={i},media={media}"]
 
+# setting CPU count and memory amount
 if "-m" not in not_argparsed:
-    if os_family == "windows":
-        mem = int(virtual_memory()[0] / 1024 / 1024 / 1024 * 0.4)
-    elif os_family == "linux":
-        with open("/proc/meminfo") as f:
-            mem = int(
-                int(
-                    next(
-                        (
-                            int(line.split()[1])
-                            for line in f
-                            if line.startswith("MemTotal")
-                        )
-                    )
-                )
-                / 1024
-                / 1024
-                * 0.4
-            )
-    mem = 4 if mem > 4 else mem
-    mem_amount = ["-m", f"{mem}G"]
+    mem_amount = ["-m", defaults["memory"]]
 else:
     mem_amount = []
 if "-smp" not in not_argparsed:
-    cpus = int(cpu_count() * 0.4)
-    cpus = 2 if cpus > 2 else cpus
-    cpu_count = ["-smp", f"{cpus}"]
+    cpu_count = ["-smp", defaults["cpu_cores"]]
 else:
     cpu_count = []
 
+# ports passthrough -- to rewrite
 if argparsed.ports_passthrough:
     port_ssh = 9922
     port_http = 9980
@@ -199,6 +196,7 @@ archs = {
 }
 arch = archs[machine()]
 
+# UEFI
 os_families = {
     "linux": {
         "accel": ["-enable-kvm"],
@@ -228,6 +226,7 @@ bios = next(
 if argparsed.no_efi:
     bios = None
 
+# TODO - vfat folder
 if "-f" in not_argparsed:
     vfat_index = not_argparsed.index("-f")
     if vfat_index < len(not_argparsed) - 1:
@@ -242,6 +241,7 @@ if "-f" in not_argparsed:
 else:
     vfat_drive = []
 
+# final command to run
 command = [
     sudo,
     [f"qemu-system-{arch}"],
