@@ -49,8 +49,9 @@ You can also use all available qemu-system-x86_64 parameters
 
 ## TODO
 
-- [ ] image creation - with fixed size option... like create if not exists and use fixed format if not exists and --fixed flag passed
-- [ ] -device sdl if windows image
+- [x] image creation if not exists
+- [ ] config in json, yaml or toml with overriding defaults
+- [ ] -display sdl if windows image
 - [ ] fat folders
 - [ ] usb device selection and passthrough
 - [ ] move all handles to argparse instead of sys.argv
@@ -58,3 +59,4 @@ You can also use all available qemu-system-x86_64 parameters
 - [ ] installation oneliner
 - [ ] flexible port forwarding but keeping the defaults
 - [ ] ?? packaging
+- [ ] download OVMF.fd if not present
