@@ -130,6 +130,15 @@ for i, image in enumerate(disk_images):
         sudo = ["sudo"]
     media = "cdrom" if image.endswith(".iso") else "disk"
     format = [e for k, e in formats.items() if image.endswith(k)][0]
+    # creating image if not present
+    if not os.isfile(image):
+        if format == "vhd.vtoy":
+            subformat = ["-o", "subformat=fixed"]
+        elif format == "vdi.vtoy":
+            subformat = ["-o", "static=on"]
+        else:
+            subformat = []
+        run(["qemu-img", "create", "-f", format] + subformat + [image, "40G"])
     drive += ["-drive", f"file={image},format={format},index={i},media={media}"]
 
 if "-m" not in not_argparsed:
