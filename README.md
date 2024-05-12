@@ -23,6 +23,11 @@ qe windows-server-2022.vdi -n
 ```
 `qemu-system-x86_64 -enable-kvm -smp 2 -m 4G -bios /usr/share/ovmf/x64/OVMF.fd -drive file=windows-server-2022.qcow2,format=qcow2,index=0,media=disk -display sdl`
 
+Avoid changing VM file with `-s` (`--snapshot`) option and do all your crazy experiments!
+```bash
+qe arch.qcow2 -s
+```
+
 ## Features
 
 - Defaults for CPU and memory. You can still use `-m` or `-smp` to specify your own
