@@ -16,7 +16,7 @@ qe w11.qcow2
 - Accepts `qemu-system-x86_64` arguments, like `-snapshot`.
 - Can create and pass folders or files to VM with the help of `mkisoifs` command (should be installed on your system).
 - Use it with the `-n` flag to generate and print a qemu command for manual editing.
-- Requires no dependencies other than python3 for main functionality.
+- Requires no dependencies other than plain python3 for main functionality (you still have to install Qemu, as it is a Qemu launcher).
 - Currently supports GNU Linux only. It worked on Windows, but the focus is on GNU Linux. MacOS commands not implemented but planned.
 
 ## Installation
@@ -49,6 +49,7 @@ You can also use all available qemu-system-x86_64 parameters
 
 ## TODO
 
+- [ ] image creation - with fixed size option... like create if not exists and use fixed format if not exists and --fixed flag passed
 - [ ] -device sdl if windows image
 - [ ] fat folders
 - [ ] usb device selection and passthrough
