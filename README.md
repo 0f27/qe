@@ -8,7 +8,7 @@ Quick way to run different virtual machine images from CLI. Just like this:
 qe w11.qcow2
 ```
 
-Quickly create and image and start VM installation:
+Quickly create an image and start VM installation:
 
 ```bash
 qe ubuntu.vdi ~/Downloads/ubuntu.iso
