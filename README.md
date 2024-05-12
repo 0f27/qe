@@ -57,7 +57,7 @@ You can also use all available qemu-system-x86_64 parameters
 
 - [x] image creation if not exists
 - [x] config in json
-- [ ] -display sdl if windows image
+- [x] -display sdl if windows image
 - [ ] fat folders
 - [ ] usb device selection and passthrough
 - [ ] move all handles to argparse instead of sys.argv
