@@ -32,6 +32,16 @@ Script options:
 You can also use all available qemu-system-x86_64 parameters
 """
 
+# not implemented, not used
+# just note for myself
+# to implement saving to and reading from yaml
+defaults = {
+    "memory": "3G",
+    "cpu_cores": "2",
+    "image_size_to_create": "40G",
+    "ports_to_forward": ["443", "80", "22"],
+}
+
 parser = argparse.ArgumentParser()
 parser.add_argument(
     "-i",
