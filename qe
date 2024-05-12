@@ -74,12 +74,6 @@ parser.add_argument(
     help="Boot in legacy mode",
 )
 parser.add_argument(
-    "-n",
-    "--dry-run",
-    action="store_true",
-    help="Generate and show qemu command without running",
-)
-parser.add_argument(
     "-s",
     "--snapshot",
     action="store_true",
@@ -107,7 +101,7 @@ if argparsed.make_iso:
         )
     not_argparsed += [to_mount]
 
-options = ["-u", "-f"]
+options = ["-u", "-f", "-n"]
 
 if len(not_argparsed) < 2 or "--help" in not_argparsed:
     print(usage)
@@ -259,5 +253,5 @@ command = [
 command = [item for sublist in command for item in sublist]
 
 print(*command)
-if not argparsed.dry_run:
+if "-n" not in not_argparsed:
     run(command)
