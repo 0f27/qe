@@ -1,28 +1,27 @@
-# QE - quick qemu alias
+# QE - quick Qemu command shorterner and VM launcher
 
-## Initial intent
+## Examples
 
-Quick way to run different virtual machine images from CLI. Just like this:
-
+Run virtual machine image file from CLI. Just like this:
 ```bash
-qe w11.qcow2
+qe w11.vhd
 ```
 
-Quickly create an image and start VM installation:
-
+The same for live iso:
 ```bash
-qe ubuntu.vdi ~/Downloads/ubuntu.iso
+qe Fedora-KDE-Live-x86_64-40-1.14.iso
 ```
 
-Generate Qemu command with `-n` option:
-
+Quickly create an image and start VM installation from iso with just a single command:
 ```bash
-qe windows-server-2022.qcow2 -n
+qe ubuntu.qcow2 ~/Downloads/ubuntu-24.04-beta-desktop-amd64.iso
+```
 
+Generate Qemu command for manual editing later, with `-n` option:
+```bash
+qe windows-server-2022.vdi -n
 ```
-```
-qemu-system-x86_64 -enable-kvm -smp 2 -m 4G -bios /usr/share/ovmf/x64/OVMF.fd -drive file=windows-server-2022.qcow2,format=qcow2,index=0,media=disk -display sdl
-```
+`qemu-system-x86_64 -enable-kvm -smp 2 -m 4G -bios /usr/share/ovmf/x64/OVMF.fd -drive file=windows-server-2022.qcow2,format=qcow2,index=0,media=disk -display sdl`
 
 ## Features
 
