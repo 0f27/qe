@@ -17,7 +17,7 @@ Quickly create an image and start VM installation from iso with just a single co
 qe ubuntu.qcow2 ~/Downloads/ubuntu-24.04-beta-desktop-amd64.iso
 ```
 
-Generate Qemu command for manual editing later, with `-n` option:
+Generate Qemu command to save or edit later, with `-n` option:
 ```bash
 qe windows-server-2022.vdi -n
 ```
