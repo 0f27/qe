@@ -136,11 +136,11 @@ def invert_bools(func):
 
 is_not_image = invert_bools(is_image)
 
-display = []
 # finding all images in args
 disk_images = list(filter(is_image, not_argparsed[1:]))
 other_args = list(filter(is_not_image, not_argparsed[1:]))
 qemu_args = [e for e in other_args if e not in options]
+display = []
 drive = []
 for i, image in enumerate(disk_images):
     if "w11" in image.lower() or "windows" in image.lower():
