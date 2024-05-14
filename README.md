@@ -95,4 +95,5 @@ You can also use all available qemu-system-x86_64 parameters
 - [ ] flexible port forwarding but keeping the defaults
 - [ ] ?? packaging
 - [ ] download OVMF.fd if not present
-- [ ] ova files unpack
+- [ ] ova files unpack and alias to vmdk
+- [ ] config.json documentation
