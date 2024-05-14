@@ -115,7 +115,7 @@ You can also use all available qemu-system-x86_64 parameters
 - [ ] usb device selection and passthrough
 - [ ] move all handles to argparse instead of sys.argv
 - [ ] MacOS support
-- [ ] installation oneliner
+- [x] installation oneliner
 - [ ] flexible port forwarding but keeping the defaults
 - [ ] ?? packaging
 - [ ] download OVMF.fd if not present
