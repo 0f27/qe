@@ -67,7 +67,7 @@ Pre-requisites Debian:
 ```bash
 sudo apt update
 sudo apt install -y \
-	  qemu-{user,system{,-gui},utils} \
+    qemu-{user,system{,-gui},utils} \
     genisoimage
 ```
 
