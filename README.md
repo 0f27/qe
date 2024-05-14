@@ -4,7 +4,7 @@
 
 Run virtual machine image file from CLI. Just like this:
 ```bash
-qe w11.vhd
+qe w11.vmdk
 ```
 
 The same for live iso:
@@ -19,9 +19,9 @@ qe ubuntu.qcow2 ~/Downloads/ubuntu-24.04-beta-desktop-amd64.iso
 
 Generate Qemu command to save or edit later, with `-n` option:
 ```bash
-qe windows-server-2022.vdi -n
+qe windows-server-2022.vhd -n
+# qemu-system-x86_64 -enable-kvm -smp 2 -m 4G -bios /usr/share/ovmf/x64/OVMF.fd -drive file=windows-server-2022.vpc,format=qcow2,index=0,media=disk -display sdl
 ```
-`qemu-system-x86_64 -enable-kvm -smp 2 -m 4G -bios /usr/share/ovmf/x64/OVMF.fd -drive file=windows-server-2022.qcow2,format=qcow2,index=0,media=disk -display sdl`
 
 Avoid changing VM file with `-s` (`--snapshot`) option and do all your crazy experiments!
 ```bash
@@ -95,3 +95,4 @@ You can also use all available qemu-system-x86_64 parameters
 - [ ] flexible port forwarding but keeping the defaults
 - [ ] ?? packaging
 - [ ] download OVMF.fd if not present
+- [ ] ova files unpack
