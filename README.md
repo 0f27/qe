@@ -121,3 +121,4 @@ You can also use all available qemu-system-x86_64 parameters
 - [ ] download OVMF.fd if not present
 - [ ] ova files unpack and alias to vmdk
 - [ ] config.json documentation
+- [ ] support for multiple iso creation
