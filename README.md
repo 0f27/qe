@@ -70,6 +70,8 @@ Then just download [qe](./qe) and place it to your PATH:
 ```bash
 wget https://raw.githubusercontent.com/XelorR/qe/main/LICENSE -O - | less
 mkdir -p ~/.local/bin
+# assuming that ~/.local/bin is in your PATH
+# if not, just modify your .bashrc, .zshrc or .config/fish/config.fish accordingly
 wget https://raw.githubusercontent.com/XelorR/qe/main/qe -O ~/.local/bin/qe
 chmod +x ~/.local/bin/qe
 ```
