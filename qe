@@ -118,6 +118,7 @@ formats = {
     "vhd": "vpc",
     "vhdx": "vhdx",
     "vmdk": "vmdk",
+    "ova": "vmdk",
     "vdi.vtoy": "vdi",
     "vhd.vtoy": "vpc",
 }
@@ -155,6 +156,14 @@ for i, image in enumerate(disk_images):
             subformat = ["-o", "subformat=fixed"]
         elif format == "vdi.vtoy":
             subformat = ["-o", "static=on"]
+        elif format == "ova":
+            folder = ".".join(image.split(".")[:-1])
+            run(["tar", "xf", image, "-C", folder])
+            os.rename(
+                [f for f in os.listdir(folder) if f.endswith(".vmdk")[0]],
+                folder + ".vmdk",
+            )
+            os.unlink(folder)
         else:
             subformat = []
         run(
