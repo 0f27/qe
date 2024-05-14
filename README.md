@@ -63,6 +63,13 @@ sudo pacman -Syu \
     genisoimage
 ```
 
+Pre-requisites Debian:
+```bash
+sudo pacman -Syu \
+	  qemu-{user,system{,-gui},utils} \
+    genisoimage
+```
+
 Then just download [qe](./qe) and place it to your PATH
 
 ## Usage
