@@ -34,6 +34,12 @@ Use `qemu-system-x86_64` arguments as well as script's own:
 qe kali.qcow2 -s -net none
 ```
 
+Pack your file or folder to iso and mount with image:
+```bash
+# ./volatility3.iso will be created with folder contents and mounted
+qe Fedora-KDE-Live-x86_64-40-1.14.iso -i ./volatility3
+```
+
 ## Installation
 
 Pre-requisites Fedora:
