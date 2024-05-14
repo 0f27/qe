@@ -71,7 +71,12 @@ sudo apt install -y \
     genisoimage
 ```
 
-Then just download [qe](./qe) and place it to your PATH
+Then just download [qe](./qe) and place it to your PATH:
+```bash
+mkdir -p ~/.local/bin
+wget https://raw.githubusercontent.com/XelorR/qe/main/qe -O ~/.local/bin/qe
+chmod +x ~/.local/bin/qe
+```
 
 ## Usage
 
