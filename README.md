@@ -67,6 +67,7 @@ sudo apt install -y \
 
 Then just download [qe](./qe) and place it to your PATH:
 ```bash
+wget https://raw.githubusercontent.com/XelorR/qe/main/LICENSE -O - | less
 mkdir -p ~/.local/bin
 wget https://raw.githubusercontent.com/XelorR/qe/main/qe -O ~/.local/bin/qe
 chmod +x ~/.local/bin/qe
