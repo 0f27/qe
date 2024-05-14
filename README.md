@@ -56,6 +56,13 @@ sudo pacman -Syu \
     cdrkit
 ```
 
+Pre-requisites Ubuntu:
+```bash
+sudo pacman -Syu \
+    qemu-kvm \
+    genisoimage
+```
+
 Then just download [qe](./qe) and place it to your PATH
 
 ## Usage
