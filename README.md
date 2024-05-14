@@ -51,7 +51,7 @@ sudo dnf install -y \
 
 Pre-requisites Arch:
 ```bash
-sudo pacman -Syu \
+sudo pacman -Sy --noconfirm \
     qemu-desktop \
     cdrkit
 ```
