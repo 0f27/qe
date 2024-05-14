@@ -58,14 +58,15 @@ sudo pacman -Syu \
 
 Pre-requisites Ubuntu:
 ```bash
-sudo pacman -Syu \
+sudo apt install -y \
     qemu-kvm \
     genisoimage
 ```
 
 Pre-requisites Debian:
 ```bash
-sudo pacman -Syu \
+sudo apt update
+sudo apt install -y \
 	  qemu-{user,system{,-gui},utils} \
     genisoimage
 ```
