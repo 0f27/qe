@@ -36,12 +36,27 @@ qe arch.qcow2 -s
 - Accepts `qemu-system-x86_64` arguments, like `-snapshot`.
 - Can create and pass folders or files to VM with the help of `mkisoifs` command (should be installed on your system).
 - Use it with the `-n` flag to generate and print a qemu command for manual editing.
-- Requires no dependencies other than plain python3 for main functionality (you still have to install Qemu, as it is a Qemu launcher).
+- Only standard lib for Python3.
 - Currently supports GNU Linux only. It worked on Windows, but the focus is on GNU Linux. MacOS commands not implemented but planned.
 
 ## Installation
 
-Download [qe](./qe) and place it to your PATH
+Pre-requisites Fedora:
+```bash
+sudo dnf install -y \
+    edk2-ovmf \
+    qemu-{kvm,tools} \
+    genisoimage
+```
+
+Pre-requisites Arch:
+```bash
+sudo pacman -Syu \
+    qemu-desktop \
+    cdrkit
+```
+
+Then just download [qe](./qe) and place it to your PATH
 
 ## Usage
 
