@@ -149,23 +149,23 @@ for i, image in enumerate(disk_images):
         display = ["-display", "sdl"]
     if image.startswith("/dev/"):
         sudo = ["sudo"]
+    if image.endswith(".ova"):
+        folder = ".".join(image.split(".")[:-1])
+        with tarfile.TarFile(image, "r") as tf:
+            tf.extractall(folder)
+        os.rename(
+            [f for f in os.listdir(folder) if f.endswith(".vmdk")][0],
+            folder + ".vmdk",
+        )
+        os.unlink(folder)
     media = "cdrom" if image.endswith(".iso") else "disk"
     format = [e for k, e in formats.items() if image.endswith(k)][0]
     # creating image if not present
     if not os.path.exists(image):
-        if format == "vhd.vtoy":
+        if image.endswith("vhd.vtoy"):
             subformat = ["-o", "subformat=fixed"]
-        elif format == "vdi.vtoy":
+        elif image.endswith("vdi.vtoy"):
             subformat = ["-o", "static=on"]
-        elif format == "ova":
-            folder = ".".join(image.split(".")[:-1])
-            with tarfile.TarFile(image, "r") as tf:
-                tf.extractall(folder)
-            os.rename(
-                [f for f in os.listdir(folder) if f.endswith(".vmdk")[0]],
-                folder + ".vmdk",
-            )
-            os.unlink(folder)
         else:
             subformat = []
         run(
