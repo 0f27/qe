@@ -28,16 +28,10 @@ Avoid changing VM file with `-s` (`--snapshot`) option and do all your crazy exp
 qe arch.qcow2 -s
 ```
 
-## Features
-
-- Defaults for CPU and memory. You can still use `-m` or `-smp` to specify your own
-- Automatic image type recognition (including something like *.iso or /dev/sda)
-- Uses UEFI by default if OVMF.fd is found in the list of usual locations.
-- Accepts `qemu-system-x86_64` arguments, like `-snapshot`.
-- Can create and pass folders or files to VM with the help of `mkisoifs` command (should be installed on your system).
-- Use it with the `-n` flag to generate and print a qemu command for manual editing.
-- Only standard lib for Python3.
-- Currently supports GNU Linux only. It worked on Windows, but the focus is on GNU Linux. MacOS commands not implemented but planned.
+Use `qemu-system-x86_64` arguments as well as script's own:
+```bash
+qe kali.qcow2 -s -net none
+```
 
 ## Installation
 
