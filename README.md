@@ -14,6 +14,7 @@ qe Fedora-KDE-Live-x86_64-40-1.14.iso
 
 Quickly create an image and start VM installation from iso with just a single command:
 ```bash
+# ubuntu.qcow2 will be created with default size if not exists
 qe ubuntu.qcow2 ~/Downloads/ubuntu-24.04-beta-desktop-amd64.iso
 ```
 
