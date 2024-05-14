@@ -6,7 +6,6 @@ import tarfile
 from platform import machine, system
 from subprocess import run
 import argparse
-from multiprocessing import cpu_count
 
 os_family = system().lower()
 
