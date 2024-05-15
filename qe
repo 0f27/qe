@@ -220,6 +220,25 @@ def identify_image_types(disk_images: list, defaults: dict) -> tuple:
     return sudo, drive, display
 
 
+def get_vfat(args: list) -> list:
+    # TODO - vfat folder
+    # currently doesn't work reliably
+    if "-f" in args:
+        vfat_index = args.index("-f")
+        if vfat_index < len(args) - 1:
+            vfat_folder = os.path.abspath(args[vfat_index + 1])
+            vfat_drive = [
+                "-drive",
+                f"file=fat:ro:{vfat_folder},index=9,format=raw,media=disk,if=virtio",
+            ]
+        else:
+            print("Missing folder path for -f option.")
+            exit()
+    else:
+        vfat_drive = []
+    return vfat_drive
+
+
 def main():
     defaults = set_defaults(gl_defaults)
     argparsed, not_argparsed = parse_args()
@@ -262,20 +281,7 @@ def main():
     if argparsed.no_efi:
         bios = None
 
-    # TODO - vfat folder
-    if "-f" in not_argparsed:
-        vfat_index = not_argparsed.index("-f")
-        if vfat_index < len(not_argparsed) - 1:
-            vfat_folder = os.path.abspath(not_argparsed[vfat_index + 1])
-            vfat_drive = [
-                "-drive",
-                f"file=fat:ro:{vfat_folder},index=9,format=raw,media=disk,if=virtio",
-            ]
-        else:
-            print("Missing folder path for -f option.")
-            exit()
-    else:
-        vfat_drive = []
+    vfat_drive = get_vfat(not_argparsed)
 
     # final command to run
     command = [
