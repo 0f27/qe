@@ -134,13 +134,8 @@ def get_mem_cpu(args, defaults):
     return mem_amount, cpu_count
 
 
-def main():
-    defaults = set_defaults()
-
-    argparsed, not_argparsed = parse_args()
-
-    if argparsed.make_iso:
-        to_pack = argparsed.make_iso
+def make_iso(to_pack, args):
+    if to_pack:
         to_mount = to_pack + ".iso"
         if not os.path.exists(to_mount):
             # depends on genisoimage package, make sure to install it first
@@ -156,7 +151,14 @@ def main():
                     to_pack,
                 ]
             )
-        not_argparsed += [to_mount]
+        args += [to_mount]
+    return args
+
+
+def main():
+    defaults = set_defaults()
+    argparsed, not_argparsed = parse_args()
+    not_argparsed = make_iso(argparsed.make_iso, not_argparsed)
 
     if len(not_argparsed) < 2 or "--help" in not_argparsed:
         print(usage)
