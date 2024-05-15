@@ -181,6 +181,14 @@ def main():
     mem_amount, cpu_count = get_mem_cpu(not_argparsed, defaults)
     port_fwd = add_ports(argparsed.ports_passthrough)
 
+    # I assume you are using image with the same architecture as host
+    archs = {
+        "x86_64": "x86_64",
+        "arm64": "aarch64",
+        "i386": "i386",
+    }
+    arch = archs[machine()]
+
     sudo = []
 
     # finding all images in args
@@ -219,14 +227,6 @@ def main():
                 + [image, defaults["image_size_to_create"]]
             )
         drive += ["-drive", f"file={image},format={format},index={i},media={media}"]
-
-    # I assume you are using image with the same architecture as host
-    archs = {
-        "x86_64": "x86_64",
-        "arm64": "aarch64",
-        "i386": "i386",
-    }
-    arch = archs[machine()]
 
     # UEFI
     os_families = {
