@@ -33,6 +33,7 @@ You can also use all available qemu-system-x86_64 parameters
 
 formats = {
     "iso": "raw",
+    "qcow": "qcow",
     "qcow2": "qcow2",
     "qed": "qed",
     "raw ": "raw ",
