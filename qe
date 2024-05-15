@@ -71,9 +71,7 @@ def set_defaults():
     return defaults
 
 
-def main():
-    defaults = set_defaults()
-
+def parse_args():
     # parsing arguments
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -103,6 +101,14 @@ def main():
     )
     argparsed, not_argparsed = parser.parse_known_args()
     not_argparsed = [parser.prog] + not_argparsed
+
+    return argparsed, not_argparsed
+
+
+def main():
+    defaults = set_defaults()
+
+    argparsed, not_argparsed = parse_args()
 
     if argparsed.make_iso:
         to_pack = argparsed.make_iso
