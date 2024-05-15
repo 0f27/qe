@@ -45,6 +45,11 @@ Run your HDD/SSD/NVME as a virtual machine!
 qe /dev/sda --snapshot
 ```
 
+UEFI is the default! But you can run in legacy mode too:
+```bash
+qe MX.qcow2 --no-efi
+```
+
 ## Installation
 
 Pre-requisites Fedora:
