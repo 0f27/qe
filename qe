@@ -46,7 +46,7 @@ def invert_bools(func):
 is_not_image = invert_bools(is_image)
 
 
-def main():
+def set_defaults():
     # setting defaults
     config_folder = os.path.expanduser("~/.config/qe")
     config_path = config_folder + "/config.json"
@@ -67,6 +67,12 @@ def main():
         }
         with open(config_path, "w") as f:
             f.write(json.dumps(defaults, indent=2))
+
+    return defaults
+
+
+def main():
+    defaults = set_defaults()
 
     # parsing arguments
     parser = argparse.ArgumentParser()
