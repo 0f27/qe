@@ -45,6 +45,14 @@ formats = {
     "vdi.vtoy": "vdi",
     "vhd.vtoy": "vpc",
 }
+defaults = {
+    "memory": "3G",
+    "cpu_cores": "2",
+    "image_size_to_create": "40G",
+    "ports_prefix": "99",
+    "ports_to_forward": ["443", "80", "22"],
+    "download_ovmf": False,
+}
 
 
 def is_image(s):
@@ -72,14 +80,6 @@ def set_defaults():
     else:
         if not os.path.exists(config_folder):
             os.mkdir(config_folder)
-        defaults = {
-            "memory": "3G",
-            "cpu_cores": "2",
-            "image_size_to_create": "40G",
-            "ports_prefix": "99",
-            "ports_to_forward": ["443", "80", "22"],
-            "download_ovmf": False,
-        }
         with open(config_path, "w") as f:
             f.write(json.dumps(defaults, indent=2))
 
