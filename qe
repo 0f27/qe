@@ -31,6 +31,21 @@ Script options:
 You can also use all available qemu-system-x86_64 parameters
 """
 
+formats = {
+    "iso": "raw",
+    "qcow2": "qcow2",
+    "qed": "qed",
+    "raw ": "raw ",
+    "img": "raw",
+    "vdi": "vdi",
+    "vhd": "vpc",
+    "vhdx": "vhdx",
+    "vmdk": "vmdk",
+    "ova": "vmdk",
+    "vdi.vtoy": "vdi",
+    "vhd.vtoy": "vpc",
+}
+
 
 def is_image(s):
     return bool(sum((s.endswith(e) or s.startswith("/dev/")) for e in formats.keys()))
@@ -149,20 +164,6 @@ def main():
         exit()
 
     sudo = []
-    formats = {
-        "iso": "raw",
-        "qcow2": "qcow2",
-        "qed": "qed",
-        "raw ": "raw ",
-        "img": "raw",
-        "vdi": "vdi",
-        "vhd": "vpc",
-        "vhdx": "vhdx",
-        "vmdk": "vmdk",
-        "ova": "vmdk",
-        "vdi.vtoy": "vdi",
-        "vhd.vtoy": "vpc",
-    }
 
     # finding all images in args
     disk_images = list(filter(is_image, not_argparsed[1:]))
