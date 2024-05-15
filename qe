@@ -37,7 +37,7 @@ config_path = config_folder + "/config.json"
 if os.path.exists(config_path):
     with open(config_path, "r") as f:
         defaults = json.load(f)
-    # TODO - checknif all fields set
+    # TODO - check if all fields set
 else:
     if not os.path.exists(config_folder):
         os.mkdir(config_folder)
