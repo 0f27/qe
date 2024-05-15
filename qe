@@ -261,11 +261,12 @@ def main():
     }
     arch = archs[machine()]
 
-    disk_images = list(filter(is_image, not_argparsed[1:]))
+    # finding all images in args
+    sudo, drive, display = identify_image_types(
+        list(filter(is_image, not_argparsed[1:])), defaults
+    )
     other_args = list(filter(is_not_image, not_argparsed[1:]))
     qemu_args = [e for e in other_args if e not in options]
-    # finding all images in args
-    sudo, drive, display = identify_image_types(disk_images, defaults)
 
     default_bios = []
     os_family_info = os_families.get(os_family, default_bios)
