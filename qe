@@ -53,6 +53,7 @@ defaults = {
     "ports_to_forward": ["443", "80", "22"],
     "download_ovmf": False,
 }
+options = ["-u", "-f", "-n"]
 
 
 def is_image(s):
@@ -156,8 +157,6 @@ def main():
                 ]
             )
         not_argparsed += [to_mount]
-
-    options = ["-u", "-f", "-n"]
 
     if len(not_argparsed) < 2 or "--help" in not_argparsed:
         print(usage)
