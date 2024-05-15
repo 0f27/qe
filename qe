@@ -18,9 +18,9 @@ It provides automatic image type detection, enables UEFI and acceleration if pos
 Script options:
 
 -p             forward ssh and http ports
--i --make-iso  Makes and mounts ISO from folder of file
+-i --make-iso  makes and mounts ISO from folder of file
 -l --no-efi    run without UEFI (default tries to find OVMF.fd)
--s --snapshot  Run VM in without saving any changes
+-s --snapshot  run VM in without saving any changes
 -n             generate command and print without running
 
 -u             select USB device (not implemented yet, TODO)
