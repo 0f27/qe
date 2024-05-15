@@ -31,98 +31,6 @@ Script options:
 You can also use all available qemu-system-x86_64 parameters
 """
 
-# setting defaults
-config_folder = os.path.expanduser("~/.config/qe")
-config_path = config_folder + "/config.json"
-if os.path.exists(config_path):
-    with open(config_path, "r") as f:
-        defaults = json.load(f)
-    # TODO - check if all fields set
-else:
-    if not os.path.exists(config_folder):
-        os.mkdir(config_folder)
-    defaults = {
-        "memory": "3G",
-        "cpu_cores": "2",
-        "image_size_to_create": "40G",
-        "ports_prefix": "99",
-        "ports_to_forward": ["443", "80", "22"],
-        "download_ovmf": False,
-    }
-    with open(config_path, "w") as f:
-        f.write(json.dumps(defaults, indent=2))
-
-# parsing arguments
-parser = argparse.ArgumentParser()
-parser.add_argument(
-    "-i",
-    "--make-iso",
-    type=str,
-    help="Makes and mounts ISO from folder of file",
-)
-parser.add_argument(
-    "-p",
-    "--ports-passthrough",
-    action="store_true",
-    help="Enables port forwarding for ssh and http",
-)
-parser.add_argument(
-    "-l",
-    "--no-efi",
-    "--legacy",
-    action="store_true",
-    help="Boot in legacy mode",
-)
-parser.add_argument(
-    "-s",
-    "--snapshot",
-    action="store_true",
-    help="Run VM in without saving any changes",
-)
-argparsed, not_argparsed = parser.parse_known_args()
-not_argparsed = [parser.prog] + not_argparsed
-
-if argparsed.make_iso:
-    to_pack = argparsed.make_iso
-    to_mount = to_pack + ".iso"
-    if not os.path.exists(to_mount):
-        # depends on genisoimage package, make sure to install it first
-        run(
-            [
-                "mkisofs",
-                "-output-charset",
-                "utf-8",
-                "-o",
-                to_mount,
-                to_pack,
-                "-V",
-                to_pack,
-            ]
-        )
-    not_argparsed += [to_mount]
-
-options = ["-u", "-f", "-n"]
-
-if len(not_argparsed) < 2 or "--help" in not_argparsed:
-    print(usage)
-    exit()
-
-sudo = []
-formats = {
-    "iso": "raw",
-    "qcow2": "qcow2",
-    "qed": "qed",
-    "raw ": "raw ",
-    "img": "raw",
-    "vdi": "vdi",
-    "vhd": "vpc",
-    "vhdx": "vhdx",
-    "vmdk": "vmdk",
-    "ova": "vmdk",
-    "vdi.vtoy": "vdi",
-    "vhd.vtoy": "vpc",
-}
-
 
 def is_image(s):
     return bool(sum((s.endswith(e) or s.startswith("/dev/")) for e in formats.keys()))
@@ -137,135 +45,233 @@ def invert_bools(func):
 
 is_not_image = invert_bools(is_image)
 
-# finding all images in args
-disk_images = list(filter(is_image, not_argparsed[1:]))
-other_args = list(filter(is_not_image, not_argparsed[1:]))
-qemu_args = [e for e in other_args if e not in options]
-display = []
-drive = []
-for i, image in enumerate(disk_images):
-    if "w11" in image.lower() or "windows" in image.lower():
-        display = ["-display", "sdl"]
-    if image.startswith("/dev/"):
-        sudo = ["sudo"]
-    if image.endswith(".ova"):
-        folder = ".".join(image.split(".")[:-1])
-        with tarfile.TarFile(image, "r") as tf:
-            tf.extractall(folder)
-        os.rename(
-            [f for f in os.listdir(folder) if f.endswith(".vmdk")][0],
-            folder + ".vmdk",
-        )
-        os.unlink(folder)
-    media = "cdrom" if image.endswith(".iso") else "disk"
-    format = [e for k, e in formats.items() if image.endswith(k)][0]
-    # creating image if not present
-    if not os.path.exists(image):
-        if image.endswith("vhd.vtoy"):
-            subformat = ["-o", "subformat=fixed"]
-        elif image.endswith("vdi.vtoy"):
-            subformat = ["-o", "static=on"]
-        else:
-            subformat = []
-        run(
-            ["qemu-img", "create", "-f", format]
-            + subformat
-            + [image, defaults["image_size_to_create"]]
-        )
-    drive += ["-drive", f"file={image},format={format},index={i},media={media}"]
 
-# setting CPU count and memory amount
-if "-m" not in not_argparsed:
-    mem_amount = ["-m", defaults["memory"]]
-else:
-    mem_amount = []
-if "-smp" not in not_argparsed:
-    cpu_count = ["-smp", defaults["cpu_cores"]]
-else:
-    cpu_count = []
+def main():
+    # setting defaults
+    config_folder = os.path.expanduser("~/.config/qe")
+    config_path = config_folder + "/config.json"
+    if os.path.exists(config_path):
+        with open(config_path, "r") as f:
+            defaults = json.load(f)
+        # TODO - check if all fields set
+    else:
+        if not os.path.exists(config_folder):
+            os.mkdir(config_folder)
+        defaults = {
+            "memory": "3G",
+            "cpu_cores": "2",
+            "image_size_to_create": "40G",
+            "ports_prefix": "99",
+            "ports_to_forward": ["443", "80", "22"],
+            "download_ovmf": False,
+        }
+        with open(config_path, "w") as f:
+            f.write(json.dumps(defaults, indent=2))
 
-# ports passthrough -- to rewrite
-if argparsed.ports_passthrough:
-    port_ssh = 9922
-    port_http = 9980
-    port_fwd = [
-        "-nic",
-        f"hostfwd=tcp:127.0.0.1:{port_ssh}-0.0.0.0:22,hostfwd=tcp:127.0.0.1:{port_http}-0.0.0.0:80",
-    ]
-else:
-    port_fwd = []
+    # parsing arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-i",
+        "--make-iso",
+        type=str,
+        help="Makes and mounts ISO from folder of file",
+    )
+    parser.add_argument(
+        "-p",
+        "--ports-passthrough",
+        action="store_true",
+        help="Enables port forwarding for ssh and http",
+    )
+    parser.add_argument(
+        "-l",
+        "--no-efi",
+        "--legacy",
+        action="store_true",
+        help="Boot in legacy mode",
+    )
+    parser.add_argument(
+        "-s",
+        "--snapshot",
+        action="store_true",
+        help="Run VM in without saving any changes",
+    )
+    argparsed, not_argparsed = parser.parse_known_args()
+    not_argparsed = [parser.prog] + not_argparsed
 
-# I assume you are using image with the same architecture as host
-archs = {
-    "x86_64": "x86_64",
-    "arm64": "aarch64",
-    "i386": "i386",
-}
-arch = archs[machine()]
+    if argparsed.make_iso:
+        to_pack = argparsed.make_iso
+        to_mount = to_pack + ".iso"
+        if not os.path.exists(to_mount):
+            # depends on genisoimage package, make sure to install it first
+            run(
+                [
+                    "mkisofs",
+                    "-output-charset",
+                    "utf-8",
+                    "-o",
+                    to_mount,
+                    to_pack,
+                    "-V",
+                    to_pack,
+                ]
+            )
+        not_argparsed += [to_mount]
 
-# UEFI
-os_families = {
-    "linux": {
-        "accel": ["-enable-kvm"],
-        "bios_paths": [
-            "/usr/share/ovmf/OVMF.fd",
-            "/usr/share/ovmf/x64/OVMF.fd",
-            "/usr/share/edk2/ovmf/OVMF_CODE.fd",
-            "./OVMF.fd",
-        ],
-    },
-    "windows": {"accel": ["--accel", "whpx"], "bios_paths": ["./OVMF.fd"]},
-    "darwin": None,
-}
+    options = ["-u", "-f", "-n"]
 
-default_bios = []
-os_family_info = os_families.get(os_family, default_bios)
+    if len(not_argparsed) < 2 or "--help" in not_argparsed:
+        print(usage)
+        exit()
 
-if not os_family_info:
-    raise NotImplementedError
+    sudo = []
+    formats = {
+        "iso": "raw",
+        "qcow2": "qcow2",
+        "qed": "qed",
+        "raw ": "raw ",
+        "img": "raw",
+        "vdi": "vdi",
+        "vhd": "vpc",
+        "vhdx": "vhdx",
+        "vmdk": "vmdk",
+        "ova": "vmdk",
+        "vdi.vtoy": "vdi",
+        "vhd.vtoy": "vpc",
+    }
 
-accel = os_family_info["accel"]
-bios = next(
-    (path for path in os_family_info["bios_paths"] if os.path.isfile(path)),
-    default_bios,
-)
+    # finding all images in args
+    disk_images = list(filter(is_image, not_argparsed[1:]))
+    other_args = list(filter(is_not_image, not_argparsed[1:]))
+    qemu_args = [e for e in other_args if e not in options]
+    display = []
+    drive = []
+    for i, image in enumerate(disk_images):
+        if "w11" in image.lower() or "windows" in image.lower():
+            display = ["-display", "sdl"]
+        if image.startswith("/dev/"):
+            sudo = ["sudo"]
+        if image.endswith(".ova"):
+            folder = ".".join(image.split(".")[:-1])
+            with tarfile.TarFile(image, "r") as tf:
+                tf.extractall(folder)
+            os.rename(
+                [f for f in os.listdir(folder) if f.endswith(".vmdk")][0],
+                folder + ".vmdk",
+            )
+            os.unlink(folder)
+        media = "cdrom" if image.endswith(".iso") else "disk"
+        format = [e for k, e in formats.items() if image.endswith(k)][0]
+        # creating image if not present
+        if not os.path.exists(image):
+            if image.endswith("vhd.vtoy"):
+                subformat = ["-o", "subformat=fixed"]
+            elif image.endswith("vdi.vtoy"):
+                subformat = ["-o", "static=on"]
+            else:
+                subformat = []
+            run(
+                ["qemu-img", "create", "-f", format]
+                + subformat
+                + [image, defaults["image_size_to_create"]]
+            )
+        drive += ["-drive", f"file={image},format={format},index={i},media={media}"]
 
-if argparsed.no_efi:
-    bios = None
+    # setting CPU count and memory amount
+    if "-m" not in not_argparsed:
+        mem_amount = ["-m", defaults["memory"]]
+    else:
+        mem_amount = []
+    if "-smp" not in not_argparsed:
+        cpu_count = ["-smp", defaults["cpu_cores"]]
+    else:
+        cpu_count = []
 
-# TODO - vfat folder
-if "-f" in not_argparsed:
-    vfat_index = not_argparsed.index("-f")
-    if vfat_index < len(not_argparsed) - 1:
-        vfat_folder = os.path.abspath(not_argparsed[vfat_index + 1])
-        vfat_drive = [
-            "-drive",
-            f"file=fat:ro:{vfat_folder},index=9,format=raw,media=disk,if=virtio",
+    # ports passthrough -- to rewrite
+    if argparsed.ports_passthrough:
+        port_ssh = 9922
+        port_http = 9980
+        port_fwd = [
+            "-nic",
+            f"hostfwd=tcp:127.0.0.1:{port_ssh}-0.0.0.0:22,hostfwd=tcp:127.0.0.1:{port_http}-0.0.0.0:80",
         ]
     else:
-        print("Missing folder path for -f option.")
-        exit()
-else:
-    vfat_drive = []
+        port_fwd = []
 
-# final command to run
-command = [
-    sudo,
-    [f"qemu-system-{arch}"],
-    accel,
-    cpu_count,
-    mem_amount,
-    [] if bios is None else ["-bios", bios],
-    qemu_args,
-    drive,
-    port_fwd,
-    vfat_drive,
-    display,
-    ["-snapshot"] if argparsed.snapshot else [],
-]
+    # I assume you are using image with the same architecture as host
+    archs = {
+        "x86_64": "x86_64",
+        "arm64": "aarch64",
+        "i386": "i386",
+    }
+    arch = archs[machine()]
 
-command = [item for sublist in command for item in sublist]
+    # UEFI
+    os_families = {
+        "linux": {
+            "accel": ["-enable-kvm"],
+            "bios_paths": [
+                "/usr/share/ovmf/OVMF.fd",
+                "/usr/share/ovmf/x64/OVMF.fd",
+                "/usr/share/edk2/ovmf/OVMF_CODE.fd",
+                "./OVMF.fd",
+            ],
+        },
+        "windows": {"accel": ["--accel", "whpx"], "bios_paths": ["./OVMF.fd"]},
+        "darwin": None,
+    }
 
-print(*command)
-if "-n" not in not_argparsed:
-    run(command)
+    default_bios = []
+    os_family_info = os_families.get(os_family, default_bios)
+
+    if not os_family_info:
+        raise NotImplementedError
+
+    accel = os_family_info["accel"]
+    bios = next(
+        (path for path in os_family_info["bios_paths"] if os.path.isfile(path)),
+        default_bios,
+    )
+
+    if argparsed.no_efi:
+        bios = None
+
+    # TODO - vfat folder
+    if "-f" in not_argparsed:
+        vfat_index = not_argparsed.index("-f")
+        if vfat_index < len(not_argparsed) - 1:
+            vfat_folder = os.path.abspath(not_argparsed[vfat_index + 1])
+            vfat_drive = [
+                "-drive",
+                f"file=fat:ro:{vfat_folder},index=9,format=raw,media=disk,if=virtio",
+            ]
+        else:
+            print("Missing folder path for -f option.")
+            exit()
+    else:
+        vfat_drive = []
+
+    # final command to run
+    command = [
+        sudo,
+        [f"qemu-system-{arch}"],
+        accel,
+        cpu_count,
+        mem_amount,
+        [] if bios is None else ["-bios", bios],
+        qemu_args,
+        drive,
+        port_fwd,
+        vfat_drive,
+        display,
+        ["-snapshot"] if argparsed.snapshot else [],
+    ]
+
+    command = [item for sublist in command for item in sublist]
+
+    print(*command)
+    if "-n" not in not_argparsed:
+        run(command)
+
+
+if __name__ == "__main__":
+    main()
