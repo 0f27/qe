@@ -105,6 +105,19 @@ def parse_args():
     return argparsed, not_argparsed
 
 
+def get_mem_cpu(args, defaults):
+    # setting CPU count and memory amount
+    if "-m" not in args:
+        mem_amount = ["-m", defaults["memory"]]
+    else:
+        mem_amount = []
+    if "-smp" not in args:
+        cpu_count = ["-smp", defaults["cpu_cores"]]
+    else:
+        cpu_count = []
+    return mem_amount, cpu_count
+
+
 def main():
     defaults = set_defaults()
 
@@ -188,15 +201,7 @@ def main():
             )
         drive += ["-drive", f"file={image},format={format},index={i},media={media}"]
 
-    # setting CPU count and memory amount
-    if "-m" not in not_argparsed:
-        mem_amount = ["-m", defaults["memory"]]
-    else:
-        mem_amount = []
-    if "-smp" not in not_argparsed:
-        cpu_count = ["-smp", defaults["cpu_cores"]]
-    else:
-        cpu_count = []
+    mem_amount, cpu_count = get_mem_cpu(not_argparsed, defaults)
 
     # ports passthrough -- to rewrite
     if argparsed.ports_passthrough:
