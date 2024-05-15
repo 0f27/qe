@@ -236,6 +236,7 @@ def main():
     archs = {
         "x86_64": "x86_64",
         "arm64": "aarch64",
+        "aarch64": "aarch64",
         "i386": "i386",
     }
     arch = archs[machine()]
