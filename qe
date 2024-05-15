@@ -155,6 +155,20 @@ def make_iso(to_pack, args):
     return args
 
 
+def add_ports(do: bool):
+    # ports passthrough -- to rewrite
+    if do:
+        port_ssh = 9922
+        port_http = 9980
+        port_fwd = [
+            "-nic",
+            f"hostfwd=tcp:127.0.0.1:{port_ssh}-0.0.0.0:22,hostfwd=tcp:127.0.0.1:{port_http}-0.0.0.0:80",
+        ]
+    else:
+        port_fwd = []
+    return port_fwd
+
+
 def main():
     defaults = set_defaults()
     argparsed, not_argparsed = parse_args()
@@ -204,17 +218,7 @@ def main():
         drive += ["-drive", f"file={image},format={format},index={i},media={media}"]
 
     mem_amount, cpu_count = get_mem_cpu(not_argparsed, defaults)
-
-    # ports passthrough -- to rewrite
-    if argparsed.ports_passthrough:
-        port_ssh = 9922
-        port_http = 9980
-        port_fwd = [
-            "-nic",
-            f"hostfwd=tcp:127.0.0.1:{port_ssh}-0.0.0.0:22,hostfwd=tcp:127.0.0.1:{port_http}-0.0.0.0:80",
-        ]
-    else:
-        port_fwd = []
+    port_fwd = add_ports(argparsed.ports_passthrough)
 
     # I assume you are using image with the same architecture as host
     archs = {
