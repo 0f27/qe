@@ -45,7 +45,7 @@ formats = {
     "vdi.vtoy": "vdi",
     "vhd.vtoy": "vpc",
 }
-defaults = {
+gl_defaults = {
     "memory": "3G",
     "cpu_cores": "2",
     "image_size_to_create": "40G",
@@ -70,7 +70,7 @@ def invert_bools(func):
 is_not_image = invert_bools(is_image)
 
 
-def set_defaults():
+def set_defaults(defaults):
     # setting defaults
     config_folder = os.path.expanduser("~/.config/qe")
     config_path = config_folder + "/config.json"
@@ -170,7 +170,7 @@ def add_ports(do: bool):
 
 
 def main():
-    defaults = set_defaults()
+    defaults = set_defaults(gl_defaults)
     argparsed, not_argparsed = parse_args()
     not_argparsed = make_iso(argparsed.make_iso, not_argparsed)
 
