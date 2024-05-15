@@ -40,6 +40,11 @@ Pack your file or folder to iso and mount with image:
 qe Fedora-KDE-Live-x86_64-40-1.14.iso -i ./volatility3
 ```
 
+Run your HDD/SSD/NVME as a virtual machine!
+```bash
+qe /dev/sda --snapshot
+```
+
 ## Installation
 
 Pre-requisites Fedora:
