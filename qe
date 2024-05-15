@@ -56,7 +56,7 @@ gl_defaults = {
 options = ["-u", "-f", "-n"]
 
 
-def is_image(s):
+def is_image(s: str) -> bool:
     return bool(sum((s.endswith(e) or s.startswith("/dev/")) for e in formats.keys()))
 
 
@@ -70,7 +70,7 @@ def invert_bools(func):
 is_not_image = invert_bools(is_image)
 
 
-def set_defaults(defaults):
+def set_defaults(defaults: dict) -> dict:
     # setting defaults
     config_folder = os.path.expanduser("~/.config/qe")
     config_path = config_folder + "/config.json"
@@ -87,7 +87,7 @@ def set_defaults(defaults):
     return defaults
 
 
-def parse_args():
+def parse_args() -> tuple:
     # parsing arguments
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -121,7 +121,7 @@ def parse_args():
     return argparsed, not_argparsed
 
 
-def get_mem_cpu(args, defaults):
+def get_mem_cpu(args: list, defaults: dict) -> tuple:
     # setting CPU count and memory amount
     if "-m" not in args:
         mem_amount = ["-m", defaults["memory"]]
@@ -134,7 +134,7 @@ def get_mem_cpu(args, defaults):
     return mem_amount, cpu_count
 
 
-def make_iso(to_pack, args):
+def make_iso(to_pack, args: list) -> list:
     if to_pack:
         to_mount = to_pack + ".iso"
         if not os.path.exists(to_mount):
@@ -155,7 +155,7 @@ def make_iso(to_pack, args):
     return args
 
 
-def add_ports(do: bool):
+def add_ports(do: bool) -> list:
     # ports passthrough -- to rewrite
     if do:
         port_ssh = 9922
