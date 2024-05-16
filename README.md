@@ -1,4 +1,4 @@
-# QE - powerful and easy to use VM launcher based on Qemu
+# QE - powerful and easy to use command line virtual machine launcher based on Qemu
 
 > I use it myself, so expect minor bugs and hidden features.
 > If you find something, feel free to open issue or create pull request.
