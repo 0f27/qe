@@ -1,4 +1,4 @@
-# QE - quick Qemu command shorterner and VM launcher
+# QE - powerful and easy to use VM launcher based on Qemu
 
 ## Examples
 
@@ -48,6 +48,12 @@ qe /dev/sda --snapshot
 UEFI is the default! But you can run in legacy mode too:
 ```bash
 qe MX.qcow2 --no-efi
+```
+
+Create and run [Ventoy](https://ventoy.net/en/index.html) [vtoyboot](https://ventoy.net/en/plugin_vtoyboot.html) and [vhdboot](https://ventoy.net/en/plugin_vhdboot.html) images to launch from your USB:
+```bash
+# UEFI and fixed image size as you need for Ventoy
+qe w11.vhd.vtoy Win11_23H2_English_x64v2.iso
 ```
 
 ## Installation
