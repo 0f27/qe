@@ -273,13 +273,20 @@ def main():
     defaults = set_defaults(gl_defaults)
     argparsed, not_argparsed = parse_args()
     not_argparsed = make_iso(argparsed.make_iso, not_argparsed)
-
-    if len(not_argparsed) < 2 or "--help" in not_argparsed:
-        print(usage)
-        exit()
-
-    mem_amount, cpu_count = get_mem_cpu(not_argparsed, defaults)
+    sudo, drive, display = identify_image_types(
+        list(filter(is_image, not_argparsed[1:])), defaults
+    )
     port_fwd = add_ports(argparsed.ports_passthrough)
+
+    vfat_drive = get_vfat(not_argparsed)
+    bios, accel = get_bios_and_acceleration(os_families)
+    if argparsed.no_efi:
+        bios = None
+    mem_amount, cpu_count = get_mem_cpu(not_argparsed, defaults)
+    other_args = list(filter(is_not_image, not_argparsed[1:]))
+    qemu_args = [
+        e for e in other_args if e not in script_options_to_exclude_from_qemu_args
+    ]
 
     # I assume you are using image with the same architecture as host
     archs = {
@@ -289,18 +296,6 @@ def main():
         "i386": "i386",
     }
     arch = archs[machine()]
-
-    sudo, drive, display = identify_image_types(
-        list(filter(is_image, not_argparsed[1:])), defaults
-    )
-    other_args = list(filter(is_not_image, not_argparsed[1:]))
-    qemu_args = [
-        e for e in other_args if e not in script_options_to_exclude_from_qemu_args
-    ]
-    vfat_drive = get_vfat(not_argparsed)
-    bios, accel = get_bios_and_acceleration(os_families)
-    if argparsed.no_efi:
-        bios = None
 
     # final command to run
     command = [
