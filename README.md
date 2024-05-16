@@ -1,5 +1,8 @@
 # QE - powerful and easy to use VM launcher based on Qemu
 
+> I use it myself, so expect minor bugs and hidden features
+> if you find something, feel free to open issue or create pull request
+
 ## Examples
 
 Run virtual machine image file from CLI. Just like this:
