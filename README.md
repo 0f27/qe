@@ -147,3 +147,4 @@ You can also use all available qemu-system-x86_64 parameters
 - [ ] add network setup to connect several VM instances
 - [ ] beautify --help
 - [ ] add flag for fixed size images
+- [ ] add flag to select image size on creation
