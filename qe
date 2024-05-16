@@ -57,7 +57,6 @@ gl_defaults = {
 }
 script_options_to_exclude_from_qemu_args = ["-u", "-f", "-n"]
 # for UEFI and accelerator
-# TODO merge with gl_defaults
 os_families = {
     "linux": {
         "accel": ["-enable-kvm"],
