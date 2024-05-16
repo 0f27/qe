@@ -234,6 +234,9 @@ def get_bios_and_acceleration(os_families):
         (path for path in os_family_info["bios_paths"] if os.path.isfile(path)),
         default_bios,
     )
+    if not bios:
+        ovmf_link = "https://github.com/clearlinux/common/raw/master/OVMF.fd"
+        pass
 
     return bios, accel
 
