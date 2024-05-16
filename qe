@@ -237,8 +237,8 @@ def get_bios_and_acceleration(os_families):
     )
     if not bios:
         ovmf_link = "https://github.com/clearlinux/common/raw/master/OVMF.fd"
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        file_path = os.path.join(script_dir, "OVMF.fd")
+        config_folder = os.path.expanduser("~/.config/qe")
+        file_path = os.path.join(config_folder, "OVMF.fd")
         if not os.path.exists(file_path):
             with urllib.request.urlopen(ovmf_link) as response, open(
                 file_path, "wb"
