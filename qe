@@ -47,6 +47,7 @@ formats = {
     "vdi.vtoy": "vdi",
     "vhd.vtoy": "vpc",
 }
+config_folder = os.path.expanduser("~/.config/qe")
 gl_defaults = {
     "memory": "3G",
     "cpu_cores": "2",
@@ -89,7 +90,6 @@ is_not_image = invert_bools(is_image)
 
 def set_defaults(defaults: dict) -> dict:
     # setting defaults
-    config_folder = os.path.expanduser("~/.config/qe")
     config_path = config_folder + "/config.json"
     if os.path.exists(config_path):
         with open(config_path, "r") as f:
@@ -238,7 +238,6 @@ def get_bios_and_acceleration(os_families):
     )
     if not bios:
         ovmf_link = "https://github.com/clearlinux/common/raw/master/OVMF.fd"
-        config_folder = os.path.expanduser("~/.config/qe")
         file_path = os.path.join(config_folder, "OVMF.fd")
         if not os.path.exists(file_path):
             with urllib.request.urlopen(ovmf_link) as response, open(
