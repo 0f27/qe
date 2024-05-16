@@ -219,6 +219,7 @@ def identify_image_types(disk_images: list, defaults: dict) -> tuple:
                 + subformat
                 + [image, defaults["image_size_to_create"]]
             )
+        # image = os.path.abspath(image)
         drive += ["-drive", f"file={image},format={format},index={i},media={media}"]
     return sudo, drive, display
 
