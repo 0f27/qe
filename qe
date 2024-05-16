@@ -222,6 +222,22 @@ def identify_image_types(disk_images: list, defaults: dict) -> tuple:
     return sudo, drive, display
 
 
+def get_bios_and_acceleration(os_families):
+    default_bios = None
+    os_family_info = os_families.get(os_family, default_bios)
+
+    if not os_family_info:
+        raise NotImplementedError
+
+    accel = os_family_info["accel"]
+    bios = next(
+        (path for path in os_family_info["bios_paths"] if os.path.isfile(path)),
+        default_bios,
+    )
+
+    return bios, accel
+
+
 def get_vfat(args: list) -> list:
     # TODO - vfat folder
     # currently doesn't work reliably
@@ -262,7 +278,6 @@ def main():
     }
     arch = archs[machine()]
 
-    # finding all images in args
     sudo, drive, display = identify_image_types(
         list(filter(is_image, not_argparsed[1:])), defaults
     )
@@ -270,23 +285,10 @@ def main():
     qemu_args = [
         e for e in other_args if e not in script_options_to_exclude_from_qemu_args
     ]
-
-    default_bios = []
-    os_family_info = os_families.get(os_family, default_bios)
-
-    if not os_family_info:
-        raise NotImplementedError
-
-    accel = os_family_info["accel"]
-    bios = next(
-        (path for path in os_family_info["bios_paths"] if os.path.isfile(path)),
-        default_bios,
-    )
-
+    vfat_drive = get_vfat(not_argparsed)
+    bios, accel = get_bios_and_acceleration(os_families)
     if argparsed.no_efi:
         bios = None
-
-    vfat_drive = get_vfat(not_argparsed)
 
     # final command to run
     command = [
