@@ -3,6 +3,7 @@
 import os
 import json
 import tarfile
+import urllib.request
 from platform import machine, system
 from subprocess import run
 import argparse
@@ -236,7 +237,15 @@ def get_bios_and_acceleration(os_families):
     )
     if not bios:
         ovmf_link = "https://github.com/clearlinux/common/raw/master/OVMF.fd"
-        pass
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        file_path = os.path.join(script_dir, "OVMF.fd")
+        if not os.path.exists(file_path):
+            with urllib.request.urlopen(ovmf_link) as response, open(
+                file_path, "wb"
+            ) as out_file:
+                data = response.read()
+                out_file.write(data)
+        bios = file_path
 
     return bios, accel
 
