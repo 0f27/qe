@@ -56,7 +56,7 @@ qe MX.qcow2 --no-efi
 Create and run [Ventoy](https://ventoy.net/en/index.html) [vtoyboot](https://ventoy.net/en/plugin_vtoyboot.html) and [vhdboot](https://ventoy.net/en/plugin_vhdboot.html) images to launch from your USB:
 ```bash
 # UEFI and fixed image size as you need for Ventoy
-qe w11.vhd.vtoy Win11_23H2_English_x64v2.iso
+qe w11.vhd.vtoy Win11_23H2_English_x64v2.iso -i ./drivers_and_software
 mv w11.vhd.vtoy w11.vhd
 ```
 
