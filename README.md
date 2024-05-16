@@ -144,3 +144,4 @@ You can also use all available qemu-system-x86_64 parameters
 - [x] refactor
 - [ ] tests!
 - [ ] add network setup to connect several VM instances
+- [ ] beautify --help
