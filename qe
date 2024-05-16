@@ -54,7 +54,6 @@ gl_defaults = {
     "image_size_to_create": "40G",
     "ports_prefix": "99",
     "ports_to_forward": ["443", "80", "22"],
-    "download_ovmf": False,
 }
 script_options_to_exclude_from_qemu_args = ["-u", "-f", "-n"]
 # for UEFI and accelerator
