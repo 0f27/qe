@@ -123,7 +123,7 @@ You can also use all available qemu-system-x86_64 parameters
 - [x] -display sdl if windows image
 - [ ] fat folders
 - [ ] usb device selection and passthrough
-- [ ] move all handles to argparse instead of sys.argv
+- [x] move all handles to argparse instead of sys.argv
 - [ ] MacOS support
 - [x] installation oneliner
 - [ ] flexible port forwarding but keeping the defaults
