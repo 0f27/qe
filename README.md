@@ -57,6 +57,7 @@ Create and run [Ventoy](https://ventoy.net/en/index.html) [vtoyboot](https://ven
 ```bash
 # UEFI and fixed image size as you need for Ventoy
 qe w11.vhd.vtoy Win11_23H2_English_x64v2.iso
+mv w11.vhd.vtoy w11.vhd
 ```
 
 ## Installation
@@ -145,3 +146,4 @@ You can also use all available qemu-system-x86_64 parameters
 - [ ] tests!
 - [ ] add network setup to connect several VM instances
 - [ ] beautify --help
+- [ ] add flag for fixed size images
