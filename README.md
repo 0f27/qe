@@ -62,42 +62,33 @@ mv w11.vhd.vtoy w11.vhd
 
 ## Installation
 
-Pre-requisites Fedora:
 ```bash
-sudo dnf install -y \
-    edk2-ovmf \
-    qemu-{kvm,tools} \
-    genisoimage
-```
+#!/usr/bin/env bash
 
-Pre-requisites Arch:
-```bash
-sudo pacman -Sy --noconfirm \
-    qemu-desktop \
-    cdrkit
-```
+. /etc/os-release
 
-Pre-requisites Ubuntu:
-```bash
-sudo apt install -y \
-    qemu-kvm \
-    genisoimage
-```
+# installing pre-requisites
+if [[ "$ID" == "ubuntu" ]]; then
+	sudo apt install -y \
+		qemu-kvm \
+		genisoimage
+elif [ "$ID" = "debian" ]; then
+	sudo apt update
+	sudo apt install -y \
+		qemu-{user,system{,-gui},utils} \
+		genisoimage
+elif [ "$ID" = "fedora" ]; then
+	sudo dnf install -y \
+		edk2-ovmf \
+		qemu-{kvm,tools} \
+		genisoimage
+elif [ "$ID_LIKE" = "arch" ]; then
+	sudo pacman -Sy --noconfirm \
+		qemu-desktop \
+		cdrkit
+fi
 
-Pre-requisites Debian:
-```bash
-sudo apt update
-sudo apt install -y \
-    qemu-{user,system{,-gui},utils} \
-    genisoimage
-```
-
-Then just download [qe](./qe) and place it to your PATH:
-```bash
-wget https://raw.githubusercontent.com/XelorR/qe/main/LICENSE -O - | less
-mkdir -p ~/.local/bin
-# assuming that ~/.local/bin is in your PATH
-# if not, just modify your .bashrc, .zshrc or .config/fish/config.fish accordingly
+# copying script itself
 wget https://raw.githubusercontent.com/XelorR/qe/main/qe -O ~/.local/bin/qe
 chmod +x ~/.local/bin/qe
 ```
