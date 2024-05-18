@@ -69,27 +69,27 @@ mv w11.vhd.vtoy w11.vhd
 
 # installing pre-requisites
 if [[ "$ID" == "ubuntu" ]]; then
-	sudo apt install -y \
+  sudo apt install -y \
     wget \
-		qemu-kvm \
-		genisoimage
+    qemu-kvm \
+    genisoimage
 elif [ "$ID" = "debian" ]; then
-	sudo apt update
-	sudo apt install -y \
+  sudo apt update
+  sudo apt install -y \
     wget \
-		qemu-{user,system{,-gui},utils} \
-		genisoimage
+    qemu-{user,system{,-gui},utils} \
+    genisoimage
 elif [ "$ID" = "fedora" ]; then
-	sudo dnf install -y \
+  sudo dnf install -y \
     wget \
-		edk2-ovmf \
-		qemu-{kvm,tools} \
-		genisoimage
+    edk2-ovmf \
+    qemu-{kvm,tools} \
+    genisoimage
 elif [ "$ID_LIKE" = "arch" ]; then
-	sudo pacman -Sy --noconfirm \
+  sudo pacman -Sy --noconfirm \
     wget \
-		qemu-desktop \
-		cdrkit
+    qemu-desktop \
+    cdrkit
 fi
 
 # copying script itself
