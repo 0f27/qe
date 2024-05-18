@@ -93,6 +93,7 @@ elif [ "$ID_LIKE" = "arch" ]; then
 fi
 
 # copying script itself
+mkdir -p ~/.local/bin
 wget https://raw.githubusercontent.com/XelorR/qe/main/qe -O ~/.local/bin/qe
 chmod +x ~/.local/bin/qe
 ```
