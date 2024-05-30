@@ -144,3 +144,4 @@ You can also use all available qemu-system-x86_64 parameters
 - [ ] beautify --help
 - [ ] add flag for fixed size images
 - [ ] add flag to select image size on creation
+- [ ] console only run
