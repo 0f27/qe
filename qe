@@ -189,7 +189,7 @@ def identify_image_types(disk_images: list, defaults: dict) -> tuple:
     drive = []
     display = []
     for i, image in enumerate(disk_images):
-        if "w11" in image.lower() or "windows" in image.lower():
+        if "w11" in image.lower() or "windows" in image.lower() and not "server" in image.lower():
             display = ["-display", "sdl"]
         if image.startswith("/dev/"):
             sudo = ["sudo"]
