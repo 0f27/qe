@@ -52,8 +52,13 @@ gl_defaults = {
     "memory": "3G",
     "cpu_cores": "2",
     "image_size_to_create": "40G",
-    "ports_prefix": "99",
-    "ports_to_forward": ["443", "80", "22"],
+    "ports_passthrough": {
+        21: 9921,  # ftp
+        22: 9922,  # ssh
+        3389: 9989,  # rdp
+        80: 9980,  # http
+        443: 9943,  # https
+    },
 }
 script_options_to_exclude_from_qemu_args = ["-u", "-f", "-n"]
 # for UEFI and accelerator
@@ -170,15 +175,16 @@ def make_iso(to_pack, args: list) -> list:
     return args
 
 
-def add_ports(do: bool) -> list:
-    # ports passthrough -- to rewrite
+def add_ports(do: bool, defaults: dict) -> list:
+    # ports passthrough
     if do:
-        port_ssh = 9922
-        port_http = 9980
-        port_fwd = [
-            "-nic",
-            f"hostfwd=tcp:127.0.0.1:{port_ssh}-0.0.0.0:22,hostfwd=tcp:127.0.0.1:{port_http}-0.0.0.0:80",
-        ]
+        port_string = ",".join(
+            [
+                f"hostfwd=tcp:127.0.0.1:{dest}-0.0.0.0:{source}"
+                for source, dest in defaults["ports_passthrough"].items()
+            ]
+        )
+        port_fwd = ["-nic", port_string]
     else:
         port_fwd = []
     return port_fwd
@@ -189,7 +195,11 @@ def identify_image_types(disk_images: list, defaults: dict) -> tuple:
     drive = []
     display = []
     for i, image in enumerate(disk_images):
-        if "w11" in image.lower() or "windows" in image.lower() and not "server" in image.lower():
+        if (
+            "w11" in image.lower()
+            or "windows" in image.lower()
+            and "server" not in image.lower()
+        ):
             display = ["-display", "sdl"]
         if image.startswith("/dev/"):
             sudo = ["sudo"]
@@ -274,7 +284,7 @@ def main():
     sudo, drive, display = identify_image_types(
         list(filter(is_image, not_argparsed[1:])), defaults
     )
-    port_fwd = add_ports(argparsed.ports_passthrough)
+    port_fwd = add_ports(argparsed.ports_passthrough, defaults)
 
     vfat_drive = get_vfat(not_argparsed)
     bios, accel = get_bios_and_acceleration(os_families)
