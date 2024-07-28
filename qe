@@ -210,7 +210,7 @@ def identify_image_types(disk_images: list, defaults: dict) -> tuple:
         if (
             "w11" in image.lower()
             or "windows" in image.lower()
-            and "server" not in image.lower()
+            # and "server" not in image.lower()
         ):
             display = ["-display", "sdl"]
         if image.startswith("/dev/"):
