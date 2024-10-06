@@ -176,13 +176,16 @@ def make_iso(to_pack, args: list) -> list:
             run(
                 [
                     "mkisofs",
-                    "-output-charset",
-                    "utf-8",
+                    "-r",
+                    # "-output-charset",
+                    # "utf-8",
+                    "-jcharset",
+                    "utf8",
                     "-o",
                     to_mount,
                     to_pack,
-                    "-V",
-                    to_pack,
+                    # "-V",
+                    # to_pack,
                 ]
             )
         args += [to_mount]
