@@ -168,6 +168,13 @@ def parse_args() -> tuple:
         action="store_true",
         help="Forward common ports (SSH:9922, HTTP:9980, HTTPS:9943, RDP:9989)",
     )
+    net_group.add_argument(
+        "--port",
+        metavar="HOST:GUEST",
+        type=str,
+        action="append",
+        help="Add custom port forwarding (e.g., --port 8080:80). Can be used multiple times",
+    )
 
     # Image Creation
     create_group = parser.add_argument_group("Image Creation")
@@ -256,19 +263,42 @@ def create_isos_if_needed(source_paths: list) -> list:
     return iso_paths
 
 
-def add_ports(do: bool, defaults: dict) -> list:
-    # ports passthrough
-    if do:
-        port_string = ",".join(
-            [
-                f"hostfwd=tcp:127.0.0.1:{dest}-0.0.0.0:{source}"
-                for source, dest in defaults["ports_passthrough"].items()
-            ]
-        )
-        port_fwd = ["-nic", port_string]
-    else:
-        port_fwd = []
-    return port_fwd
+def parse_port_mapping(port_str: str) -> tuple:
+    """Parse host:guest port string into tuple (host_port, guest_port)."""
+    parts = port_str.split(":")
+    if len(parts) != 2:
+        raise ValueError(f"Invalid port format '{port_str}'. Expected HOST:GUEST (e.g., 8080:80)")
+    return int(parts[0]), int(parts[1])
+
+
+def add_ports(use_defaults: bool, custom_ports: list, defaults: dict) -> list:
+    """Build port forwarding arguments for QEMU.
+
+    Args:
+        use_defaults: Whether to include default port mappings
+        custom_ports: List of custom port strings in HOST:GUEST format
+        defaults: Configuration defaults including ports_passthrough
+    """
+    ports = {}
+
+    # Add default ports if requested
+    if use_defaults:
+        ports.update(defaults["ports_passthrough"])
+
+    # Add custom ports
+    if custom_ports:
+        for port_str in custom_ports:
+            host_port, guest_port = parse_port_mapping(port_str)
+            ports[guest_port] = host_port
+
+    if not ports:
+        return []
+
+    port_string = ",".join(
+        f"hostfwd=tcp:127.0.0.1:{host_port}-0.0.0.0:{guest_port}"
+        for guest_port, host_port in ports.items()
+    )
+    return ["-nic", f"user,{port_string}"]
 
 
 def is_windows_image(image_path: str) -> bool:
@@ -421,7 +451,7 @@ def main():
     disk_images.extend(iso_paths)
 
     sudo, drive, display = identify_image_types(disk_images, defaults, argparsed.fixed_size)
-    port_fwd = add_ports(argparsed.ports_passthrough, defaults)
+    port_fwd = add_ports(argparsed.ports_passthrough, argparsed.port, defaults)
 
     vfat_drive = get_vfat(not_argparsed)
     bios, accel = get_bios_and_acceleration(os_families)
