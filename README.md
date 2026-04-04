@@ -135,13 +135,13 @@ You can also use all available qemu-system-x86_64 parameters
 - [ ] flexible port forwarding but keeping the defaults
 - [ ] ?? packaging
 - [x] download OVMF.fd if not present
-- [ ] ova files unpack and alias to vmdk
+- [x] ova files unpack and alias to vmdk
 - [ ] config.json documentation
 - [ ] support for multiple iso creation
 - [x] refactor
 - [ ] tests!
 - [ ] add network setup to connect several VM instances
-- [ ] beautify --help
-- [ ] add flag for fixed size images
-- [ ] add flag to select image size on creation
-- [ ] console only run
+- [x] beautify --help
+- [x] add flag for fixed size images
+- [x] add flag to select image size on creation
+- [x] console only run
