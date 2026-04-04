@@ -120,55 +120,88 @@ def set_defaults(defaults: dict) -> dict:
 
 
 def parse_args() -> tuple:
-    # parsing arguments
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-i",
-        "--make-iso",
-        type=str,
-        help="Makes and mounts ISO from folder of file",
+    """Parse command line arguments."""
+    parser = argparse.ArgumentParser(
+        description="QE - Quick Emulator: A simple wrapper for QEMU to launch VMs from the command line.",
+        epilog="Examples:\n"
+        "  %(prog)s ubuntu.qcow2                    # Run existing VM\n"
+        "  %(prog)s new.qcow2 --size 20G             # Create and run new 20GB VM\n"
+        "  %(prog)s live.iso -c                      # Run ISO with console only\n"
+        "  %(prog)s disk.vmdk -s                     # Run with snapshot (no changes saved)\n"
+        "  %(prog)s w11.qcow2 -i ./drivers           # Mount drivers folder as ISO\n\n"
+        "All qemu-system-x86_64 parameters are also supported.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    parser.add_argument(
-        "--smb",
-        type=str,
-        help="Mounts folder as SMB drive (\\10.0.2.4\qemu)",
+
+    # VM Configuration
+    vm_group = parser.add_argument_group("VM Configuration")
+    vm_group.add_argument(
+        "images",
+        nargs="*",
+        help="VM image files (.qcow2, .vmdk, .vhd, .iso, etc.)",
     )
-    parser.add_argument(
-        "-p",
-        "--ports-passthrough",
+    vm_group.add_argument(
+        "-s",
+        "--snapshot",
         action="store_true",
-        help="Enables port forwarding for ssh and http",
+        help="Run VM without saving any changes (snapshot mode)",
     )
-    parser.add_argument(
+    vm_group.add_argument(
+        "-c",
+        "--console",
+        action="store_true",
+        help="Console only mode (no GUI, adds -nographic)",
+    )
+    vm_group.add_argument(
         "-l",
         "--no-efi",
         "--legacy",
         action="store_true",
-        help="Boot in legacy mode",
+        help="Boot in legacy BIOS mode (default: UEFI if available)",
     )
-    parser.add_argument(
-        "-s",
-        "--snapshot",
+
+    # Port Forwarding
+    net_group = parser.add_argument_group("Port Forwarding")
+    net_group.add_argument(
+        "-p",
+        "--ports-passthrough",
         action="store_true",
-        help="Run VM in without saving any changes",
+        help="Forward common ports (SSH:9922, HTTP:9980, HTTPS:9943, RDP:9989)",
     )
-    parser.add_argument(
-        "-c",
-        "--console",
-        action="store_true",
-        help="Run VM with console only (no GUI, -nographic)",
-    )
-    parser.add_argument(
-        "--fixed-size",
-        action="store_true",
-        help="Create fixed-size image instead of dynamic",
-    )
-    parser.add_argument(
+
+    # Image Creation
+    create_group = parser.add_argument_group("Image Creation")
+    create_group.add_argument(
         "--size",
         type=str,
-        default=None,
-        help="Image size to create (e.g., 20G, 100M). Default: 40G",
+        metavar="SIZE",
+        help="Set image size for new images (e.g., 20G, 512M). Default: 40G",
     )
+    create_group.add_argument(
+        "--fixed-size",
+        action="store_true",
+        help="Create fixed-size image instead of dynamically allocated",
+    )
+
+    # ISO & Mounting
+    iso_group = parser.add_argument_group("ISO & File Mounting")
+    iso_group.add_argument(
+        "-i",
+        "--make-iso",
+        metavar="PATH",
+        type=str,
+        help="Create and mount ISO from folder or file",
+    )
+
+    # Output
+    output_group = parser.add_argument_group("Output")
+    output_group.add_argument(
+        "-n",
+        "--dry-run",
+        action="store_true",
+        help="Print QEMU command without running",
+    )
+
     argparsed, not_argparsed = parser.parse_known_args()
     not_argparsed = [parser.prog] + not_argparsed
 
@@ -430,7 +463,7 @@ def main():
     command = [item for sublist in command for item in sublist]
 
     print(*command)
-    if "-n" not in not_argparsed:
+    if not argparsed.dry_run:
         run(command)
 
 
