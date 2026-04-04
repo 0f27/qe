@@ -100,26 +100,77 @@ chmod +x ~/.local/bin/qe
 
 ## Usage
 
+Run `qe --help` for full usage information.
+
+```bash
+qe [images] [options]
 ```
-Usage: qe [images] (script options) (other qemu params)
 
-Wrapper for qemu to simplify VM launching from command line
-It provides automatic image type detection, enables UEFI and acceleration if possible and provides some additional niceties, see below
+**Quick examples:**
 
-Script options:
+```bash
+# Run an existing VM
+qe ubuntu.qcow2
 
--p             forward ssh and http ports
--i --make-iso  makes and mounts ISO from folder of file
--l --no-efi    run without UEFI (default tries to find OVMF.fd)
--s --snapshot  run VM in without saving any changes
--n             generate command and print without running
+# Create and run a new VM with specific size
+qe new.qcow2 --size 20G
 
--u             select USB device (not implemented yet, TODO)
--f             FAT folder, read only (not implemented yet, TODO)
+# Run a live ISO with console only (no GUI)
+qe Fedora-Live.iso -c
 
---help         display help message
+# Run with snapshot mode (changes not saved)
+qe windows.qcow2 -s
 
-You can also use all available qemu-system-x86_64 parameters
+# Mount a folder as ISO
+qe vm.qcow2 -i ./drivers
+
+# Print QEMU command without running
+qe image.qcow2 -n
+```
+
+## Configuration
+
+QE looks for a configuration file at `~/.config/qe/config.json`. This file is created automatically with default values if it doesn't exist.
+
+### Default Configuration
+
+```json
+{
+  "memory": "3G",
+  "cpu_cores": "2",
+  "image_size_to_create": "40G",
+  "ports_passthrough": {
+    "22": 9922,
+    "80": 9980,
+    "443": 9943,
+    "21": 9921,
+    "3389": 9989
+  }
+}
+```
+
+### Configuration Options
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `memory` | string | Default memory allocation for VMs (e.g., "4G", "2048M") |
+| `cpu_cores` | string | Number of CPU cores to allocate |
+| `image_size_to_create` | string | Default size for new disk images |
+| `ports_passthrough` | object | Port forwarding mappings (guest_port: host_port) |
+
+### Example Custom Configuration
+
+```json
+{
+  "memory": "8G",
+  "cpu_cores": "4",
+  "image_size_to_create": "100G",
+  "ports_passthrough": {
+    "22": 9922,
+    "80": 9980,
+    "8080": 8080
+  }
+}
 ```
 
 ## TODO
