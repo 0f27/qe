@@ -94,7 +94,7 @@ fi
 
 # copying script itself
 mkdir -p ~/.local/bin
-wget https://raw.githubusercontent.com/XelorR/qe/main/qe -O ~/.local/bin/qe
+wget https://raw.githubusercontent.com/0f27/qe/main/qe -O ~/.local/bin/qe
 chmod +x ~/.local/bin/qe
 ```
 
