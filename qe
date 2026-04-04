@@ -2,6 +2,7 @@
 
 import os
 import json
+import shutil
 import tarfile
 import urllib.request
 from platform import machine, system
@@ -231,10 +232,12 @@ def extract_ova(ova_path: str) -> str:
         tf.extractall(folder)
     vmdk_files = [f for f in os.listdir(folder) if f.endswith(".vmdk")]
     if not vmdk_files:
+        shutil.rmtree(folder, ignore_errors=True)
         raise ValueError(f"No VMDK file found in OVA: {ova_path}")
     extracted_path = folder + ".vmdk"
-    os.rename(vmdk_files[0], extracted_path)
-    os.unlink(folder)
+    source_path = os.path.join(folder, vmdk_files[0])
+    os.rename(source_path, extracted_path)
+    shutil.rmtree(folder)
     return extracted_path
 
 
