@@ -149,6 +149,12 @@ def parse_args() -> tuple:
         action="store_true",
         help="Run VM in without saving any changes",
     )
+    parser.add_argument(
+        "-c",
+        "--console",
+        action="store_true",
+        help="Run VM with console only (no GUI, -nographic)",
+    )
     argparsed, not_argparsed = parser.parse_known_args()
     not_argparsed = [parser.prog] + not_argparsed
 
@@ -367,6 +373,11 @@ def main():
     qemu_args = [
         e for e in other_args if e not in script_options_to_exclude_from_qemu_args
     ]
+
+    # Handle console-only mode
+    if argparsed.console:
+        display = []  # Remove any display settings
+        qemu_args.append("-nographic")
 
     # I assume you are using image with the same architecture as host
     archs = {
