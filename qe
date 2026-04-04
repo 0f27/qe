@@ -81,14 +81,7 @@ def is_image(s: str) -> bool:
     return bool(sum((s.endswith(e) or s.startswith("/dev/")) for e in formats.keys()))
 
 
-def invert_bools(func):
-    def wrapper(*args, **kwargs):
-        return not func(*args, **kwargs)
-
-    return wrapper
-
-
-is_not_image = invert_bools(is_image)
+is_not_image = lambda s: not is_image(s)
 
 
 def set_defaults(defaults: dict) -> dict:
