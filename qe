@@ -34,7 +34,7 @@ IMAGE_FORMATS = {
     "qcow": "qcow",
     "qcow2": "qcow2",
     "qed": "qed",
-    "raw ": "raw ",
+    "raw": "raw",
     "img": "raw",
     "vdi": "vdi",
     "vhd": "vpc",
