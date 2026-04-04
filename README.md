@@ -124,6 +124,12 @@ qe windows.qcow2 -s
 # Mount a folder as ISO
 qe vm.qcow2 -i ./drivers
 
+# Forward custom port (host:guest)
+qe vm.qcow2 --port 8080:80
+
+# Use default ports (-p) plus custom port
+qe vm.qcow2 -p --port 3306:3306
+
 # Print QEMU command without running
 qe image.qcow2 -n
 ```
@@ -183,7 +189,7 @@ QE looks for a configuration file at `~/.config/qe/config.json`. This file is cr
 - [x] move all handles to argparse instead of sys.argv
 - [ ] MacOS support
 - [x] installation oneliner
-- [ ] flexible port forwarding but keeping the defaults
+- [x] flexible port forwarding but keeping the defaults
 - [ ] ?? packaging
 - [x] download OVMF.fd if not present
 - [x] ova files unpack and alias to vmdk
