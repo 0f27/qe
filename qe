@@ -58,6 +58,7 @@ Script options:
 -i --make-iso  makes and mounts ISO from folder of file
 -l --no-efi    run without UEFI (default tries to find OVMF.fd)
 -s --snapshot  run VM in without saving any changes
+-c --console   run VM with console only (no GUI)
 -n             generate command and print without running
 
 -u             select USB device (not implemented yet, TODO)
@@ -76,7 +77,7 @@ gl_defaults = {
     "image_size_to_create": DEFAULT_IMAGE_SIZE,
     "ports_passthrough": DEFAULT_PORTS,
 }
-script_options_to_exclude_from_qemu_args = ["-u", "-f", "-n"]
+script_options_to_exclude_from_qemu_args = ["-u", "-f", "-n", "-c"]
 # for UEFI and accelerator
 os_families = {
     "linux": {
