@@ -176,28 +176,26 @@ def mount_smb(folder: str) -> list:
     raise NotImplemented
 
 
-def make_iso(to_pack, args: list) -> list:
-    if to_pack:
-        to_mount = to_pack + ".iso"
-        if not os.path.exists(to_mount):
-            # depends on genisoimage package, make sure to install it first
-            run(
-                [
-                    "mkisofs",
-                    "-r",
-                    # "-output-charset",
-                    # "utf-8",
-                    "-jcharset",
-                    "utf8",
-                    "-o",
-                    to_mount,
-                    to_pack,
-                    # "-V",
-                    # to_pack,
-                ]
-            )
-        args += [to_mount]
-    return args
+def create_iso_if_needed(source_path: str) -> str:
+    """Create ISO from file or folder if it doesn't exist. Returns ISO path."""
+    if not source_path:
+        return None
+
+    iso_path = source_path + ".iso"
+    if not os.path.exists(iso_path):
+        # depends on genisoimage package, make sure to install it first
+        run(
+            [
+                "mkisofs",
+                "-r",
+                "-jcharset",
+                "utf8",
+                "-o",
+                iso_path,
+                source_path,
+            ]
+        )
+    return iso_path
 
 
 def add_ports(do: bool, defaults: dict) -> list:
@@ -347,10 +345,14 @@ def get_vfat(args: list) -> list:
 def main():
     defaults = set_defaults(gl_defaults)
     argparsed, not_argparsed = parse_args()
-    not_argparsed = make_iso(argparsed.make_iso, not_argparsed)
-    sudo, drive, display = identify_image_types(
-        list(filter(is_image, not_argparsed[1:])), defaults
-    )
+
+    # Handle ISO creation and add to images list
+    iso_path = create_iso_if_needed(argparsed.make_iso)
+    disk_images = list(filter(is_image, not_argparsed[1:]))
+    if iso_path:
+        disk_images.append(iso_path)
+
+    sudo, drive, display = identify_image_types(disk_images, defaults)
     port_fwd = add_ports(argparsed.ports_passthrough, defaults)
 
     vfat_drive = get_vfat(not_argparsed)
