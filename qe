@@ -10,6 +10,41 @@ import argparse
 
 os_family = system().lower()
 
+# Constants
+CONFIG_FOLDER = os.path.expanduser("~/.config/qe")
+OVMF_DOWNLOAD_URL = "https://github.com/clearlinux/common/raw/master/OVMF.fd"
+
+# Default configuration values
+DEFAULT_MEMORY = "3G"
+DEFAULT_CPU_CORES = "2"
+DEFAULT_IMAGE_SIZE = "40G"
+
+# Port forwarding defaults (host port -> guest port)
+DEFAULT_PORTS = {
+    22: 9922,    # ssh
+    80: 9980,    # http
+    443: 9943,   # https
+    21: 9921,    # ftp
+    3389: 9989,  # rdp
+}
+
+# Image format to QEMU driver mapping
+IMAGE_FORMATS = {
+    "iso": "raw",
+    "qcow": "qcow",
+    "qcow2": "qcow2",
+    "qed": "qed",
+    "raw ": "raw ",
+    "img": "raw",
+    "vdi": "vdi",
+    "vhd": "vpc",
+    "vhdx": "vhdx",
+    "vmdk": "vmdk",
+    "ova": "vmdk",
+    "vdi.vtoy": "vdi",
+    "vhd.vtoy": "vpc",
+}
+
 usage = """
 Usage: qe [images] (script options) (other qemu params)
 
@@ -32,33 +67,13 @@ Script options:
 You can also use all available qemu-system-x86_64 parameters
 """
 
-formats = {
-    "iso": "raw",
-    "qcow": "qcow",
-    "qcow2": "qcow2",
-    "qed": "qed",
-    "raw ": "raw ",
-    "img": "raw",
-    "vdi": "vdi",
-    "vhd": "vpc",
-    "vhdx": "vhdx",
-    "vmdk": "vmdk",
-    "ova": "vmdk",
-    "vdi.vtoy": "vdi",
-    "vhd.vtoy": "vpc",
-}
-config_folder = os.path.expanduser("~/.config/qe")
+formats = IMAGE_FORMATS
+config_folder = CONFIG_FOLDER
 gl_defaults = {
-    "memory": "3G",
-    "cpu_cores": "2",
-    "image_size_to_create": "40G",
-    "ports_passthrough": {
-        22: 9922,  # ssh
-        80: 9980,  # http
-        443: 9943,  # https
-        21: 9921,  # ftp
-        3389: 9989,  # rdp
-    },
+    "memory": DEFAULT_MEMORY,
+    "cpu_cores": DEFAULT_CPU_CORES,
+    "image_size_to_create": DEFAULT_IMAGE_SIZE,
+    "ports_passthrough": DEFAULT_PORTS,
 }
 script_options_to_exclude_from_qemu_args = ["-u", "-f", "-n"]
 # for UEFI and accelerator
