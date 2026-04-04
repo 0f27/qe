@@ -60,6 +60,7 @@ Script options:
 -s --snapshot  run VM in without saving any changes
 -c --console   run VM with console only (no GUI)
 --fixed-size   create fixed-size image instead of dynamic
+--size SIZE    specify image size (e.g., 20G, 512M)
 -n             generate command and print without running
 
 -u             select USB device (not implemented yet, TODO)
@@ -161,6 +162,12 @@ def parse_args() -> tuple:
         "--fixed-size",
         action="store_true",
         help="Create fixed-size image instead of dynamic",
+    )
+    parser.add_argument(
+        "--size",
+        type=str,
+        default=None,
+        help="Image size to create (e.g., 20G, 100M). Default: 40G",
     )
     argparsed, not_argparsed = parser.parse_known_args()
     not_argparsed = [parser.prog] + not_argparsed
@@ -366,6 +373,10 @@ def get_vfat(args: list) -> list:
 def main():
     defaults = set_defaults(gl_defaults)
     argparsed, not_argparsed = parse_args()
+
+    # Override image size if --size is provided
+    if argparsed.size:
+        defaults["image_size_to_create"] = argparsed.size
 
     # Handle ISO creation and add to images list
     iso_path = create_iso_if_needed(argparsed.make_iso)
