@@ -215,45 +215,87 @@ def add_ports(do: bool, defaults: dict) -> list:
     return port_fwd
 
 
+def is_windows_image(image_path: str) -> bool:
+    """Check if image appears to be a Windows VM based on filename."""
+    name_lower = image_path.lower()
+    return "w11" in name_lower or "windows" in name_lower
+
+
+def needs_sudo(image_path: str) -> bool:
+    """Check if image requires sudo (raw device access)."""
+    return image_path.startswith("/dev/")
+
+
+def extract_ova(ova_path: str) -> str:
+    """Extract OVA file and return path to extracted VMDK."""
+    folder = ".".join(ova_path.split(".")[:-1])
+    with tarfile.TarFile(ova_path, "r") as tf:
+        tf.extractall(folder)
+    vmdk_files = [f for f in os.listdir(folder) if f.endswith(".vmdk")]
+    if not vmdk_files:
+        raise ValueError(f"No VMDK file found in OVA: {ova_path}")
+    extracted_path = folder + ".vmdk"
+    os.rename(vmdk_files[0], extracted_path)
+    os.unlink(folder)
+    return extracted_path
+
+
+def get_image_format(image_path: str) -> str:
+    """Get QEMU format string for image file."""
+    formats_found = [fmt for ext, fmt in formats.items() if image_path.endswith(ext)]
+    if not formats_found:
+        raise ValueError(f"Unknown image format for: {image_path}")
+    return formats_found[0]
+
+
+def get_media_type(image_path: str) -> str:
+    """Determine media type (cdrom or disk) for image."""
+    return "cdrom" if image_path.endswith(".iso") else "disk"
+
+
+def create_image_if_missing(image_path: str, defaults: dict) -> None:
+    """Create disk image if it doesn't exist."""
+    if os.path.exists(image_path):
+        return
+
+    img_format = get_image_format(image_path)
+    subformat = []
+    if image_path.endswith("vhd.vtoy"):
+        subformat = ["-o", "subformat=fixed"]
+    elif image_path.endswith("vdi.vtoy"):
+        subformat = ["-o", "static=on"]
+
+    run(
+        ["qemu-img", "create", "-f", img_format]
+        + subformat
+        + [image_path, defaults["image_size_to_create"]]
+    )
+
+
+def build_drive_args(image_path: str, index: int) -> list:
+    """Build QEMU drive arguments for an image."""
+    img_format = get_image_format(image_path)
+    media = get_media_type(image_path)
+    return ["-drive", f"file={image_path},format={img_format},index={index},media={media}"]
+
+
 def identify_image_types(disk_images: list, defaults: dict) -> tuple:
+    """Process disk images and return QEMU arguments."""
     sudo = []
     drive = []
     display = []
+
     for i, image in enumerate(disk_images):
-        if (
-            "w11" in image.lower()
-            or "windows" in image.lower()
-            # and "server" not in image.lower()
-        ):
+        if is_windows_image(image):
             display = ["-display", "sdl"]
-        if image.startswith("/dev/"):
+        if needs_sudo(image):
             sudo = ["sudo"]
         if image.endswith(".ova"):
-            folder = ".".join(image.split(".")[:-1])
-            with tarfile.TarFile(image, "r") as tf:
-                tf.extractall(folder)
-            os.rename(
-                [f for f in os.listdir(folder) if f.endswith(".vmdk")][0],
-                folder + ".vmdk",
-            )
-            os.unlink(folder)
-        media = "cdrom" if image.endswith(".iso") else "disk"
-        format = [e for k, e in formats.items() if image.endswith(k)][0]
-        # creating image if not present
-        if not os.path.exists(image):
-            if image.endswith("vhd.vtoy"):
-                subformat = ["-o", "subformat=fixed"]
-            elif image.endswith("vdi.vtoy"):
-                subformat = ["-o", "static=on"]
-            else:
-                subformat = []
-            run(
-                ["qemu-img", "create", "-f", format]
-                + subformat
-                + [image, defaults["image_size_to_create"]]
-            )
-        # image = os.path.abspath(image)
-        drive += ["-drive", f"file={image},format={format},index={i},media={media}"]
+            image = extract_ova(image)
+
+        create_image_if_missing(image, defaults)
+        drive += build_drive_args(image, i)
+
     return sudo, drive, display
 
 
