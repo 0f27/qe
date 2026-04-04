@@ -447,7 +447,9 @@ def main():
 
     # Handle ISO creation and add to images list
     iso_paths = create_isos_if_needed(argparsed.make_iso)
-    disk_images = list(filter(is_image, not_argparsed[1:]))
+    # Get images from positional args (if any) plus remaining unparsed args
+    disk_images = list(argparsed.images) if argparsed.images else []
+    disk_images.extend(filter(is_image, not_argparsed[1:]))
     disk_images.extend(iso_paths)
 
     sudo, drive, display = identify_image_types(disk_images, defaults, argparsed.fixed_size)
