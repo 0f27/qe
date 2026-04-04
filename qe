@@ -78,7 +78,7 @@ os_families = {
 
 
 def is_image(s: str) -> bool:
-    return bool(sum((s.endswith(e) or s.startswith("/dev/")) for e in formats.keys()))
+    return any(s.endswith(ext) or s.startswith("/dev/") for ext in formats.keys())
 
 
 is_not_image = lambda s: not is_image(s)
