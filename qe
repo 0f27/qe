@@ -59,6 +59,7 @@ Script options:
 -l --no-efi    run without UEFI (default tries to find OVMF.fd)
 -s --snapshot  run VM in without saving any changes
 -c --console   run VM with console only (no GUI)
+--fixed-size   create fixed-size image instead of dynamic
 -n             generate command and print without running
 
 -u             select USB device (not implemented yet, TODO)
@@ -155,6 +156,11 @@ def parse_args() -> tuple:
         "--console",
         action="store_true",
         help="Run VM with console only (no GUI, -nographic)",
+    )
+    parser.add_argument(
+        "--fixed-size",
+        action="store_true",
+        help="Create fixed-size image instead of dynamic",
     )
     argparsed, not_argparsed = parser.parse_known_args()
     not_argparsed = [parser.prog] + not_argparsed
@@ -261,17 +267,22 @@ def get_media_type(image_path: str) -> str:
     return "cdrom" if image_path.endswith(".iso") else "disk"
 
 
-def create_image_if_missing(image_path: str, defaults: dict) -> None:
+def create_image_if_missing(image_path: str, defaults: dict, fixed_size: bool = False) -> None:
     """Create disk image if it doesn't exist."""
     if os.path.exists(image_path):
         return
 
     img_format = get_image_format(image_path)
     subformat = []
-    if image_path.endswith("vhd.vtoy"):
+    # Fixed size for Ventoy images or when --fixed-size flag is used
+    if image_path.endswith("vhd.vtoy") or (fixed_size and image_path.endswith(".vhd")):
         subformat = ["-o", "subformat=fixed"]
-    elif image_path.endswith("vdi.vtoy"):
+    elif image_path.endswith("vdi.vtoy") or (fixed_size and image_path.endswith(".vdi")):
         subformat = ["-o", "static=on"]
+    elif fixed_size:
+        # For qcow2 and other formats, we can't easily make fixed size
+        # but we can preallocate
+        subformat = ["-o", "preallocation=metadata"]
 
     run(
         ["qemu-img", "create", "-f", img_format]
@@ -287,7 +298,7 @@ def build_drive_args(image_path: str, index: int) -> list:
     return ["-drive", f"file={image_path},format={img_format},index={index},media={media}"]
 
 
-def identify_image_types(disk_images: list, defaults: dict) -> tuple:
+def identify_image_types(disk_images: list, defaults: dict, fixed_size: bool = False) -> tuple:
     """Process disk images and return QEMU arguments."""
     sudo = []
     drive = []
@@ -301,7 +312,7 @@ def identify_image_types(disk_images: list, defaults: dict) -> tuple:
         if image.endswith(".ova"):
             image = extract_ova(image)
 
-        create_image_if_missing(image, defaults)
+        create_image_if_missing(image, defaults, fixed_size)
         drive += build_drive_args(image, i)
 
     return sudo, drive, display
@@ -362,7 +373,7 @@ def main():
     if iso_path:
         disk_images.append(iso_path)
 
-    sudo, drive, display = identify_image_types(disk_images, defaults)
+    sudo, drive, display = identify_image_types(disk_images, defaults, argparsed.fixed_size)
     port_fwd = add_ports(argparsed.ports_passthrough, defaults)
 
     vfat_drive = get_vfat(not_argparsed)
