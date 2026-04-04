@@ -190,7 +190,8 @@ def parse_args() -> tuple:
         "--make-iso",
         metavar="PATH",
         type=str,
-        help="Create and mount ISO from folder or file",
+        action="append",
+        help="Create and mount ISO from folder or file (can be used multiple times)",
     )
 
     # Output
@@ -230,26 +231,29 @@ def mount_smb(folder: str) -> list:
     raise NotImplemented
 
 
-def create_iso_if_needed(source_path: str) -> str:
-    """Create ISO from file or folder if it doesn't exist. Returns ISO path."""
-    if not source_path:
-        return None
+def create_isos_if_needed(source_paths: list) -> list:
+    """Create ISOs from files or folders if they don't exist. Returns list of ISO paths."""
+    if not source_paths:
+        return []
 
-    iso_path = source_path + ".iso"
-    if not os.path.exists(iso_path):
-        # depends on genisoimage package, make sure to install it first
-        run(
-            [
-                "mkisofs",
-                "-r",
-                "-jcharset",
-                "utf8",
-                "-o",
-                iso_path,
-                source_path,
-            ]
-        )
-    return iso_path
+    iso_paths = []
+    for source_path in source_paths:
+        iso_path = source_path + ".iso"
+        if not os.path.exists(iso_path):
+            # depends on genisoimage package, make sure to install it first
+            run(
+                [
+                    "mkisofs",
+                    "-r",
+                    "-jcharset",
+                    "utf8",
+                    "-o",
+                    iso_path,
+                    source_path,
+                ]
+            )
+        iso_paths.append(iso_path)
+    return iso_paths
 
 
 def add_ports(do: bool, defaults: dict) -> list:
@@ -412,10 +416,9 @@ def main():
         defaults["image_size_to_create"] = argparsed.size
 
     # Handle ISO creation and add to images list
-    iso_path = create_iso_if_needed(argparsed.make_iso)
+    iso_paths = create_isos_if_needed(argparsed.make_iso)
     disk_images = list(filter(is_image, not_argparsed[1:]))
-    if iso_path:
-        disk_images.append(iso_path)
+    disk_images.extend(iso_paths)
 
     sudo, drive, display = identify_image_types(disk_images, defaults, argparsed.fixed_size)
     port_fwd = add_ports(argparsed.ports_passthrough, defaults)
