@@ -200,6 +200,14 @@ def parse_args() -> tuple:
         action="append",
         help="Create and mount ISO from folder or file (can be used multiple times)",
     )
+    iso_group.add_argument(
+        "-f",
+        "--folder",
+        metavar="PATH[:rw]",
+        type=str,
+        action="append",
+        help="Mount host folder as FAT drive (add :rw for read-write). Can be used multiple times",
+    )
 
     # Output
     output_group = parser.add_argument_group("Output")
@@ -261,6 +269,60 @@ def create_isos_if_needed(source_paths: list) -> list:
             )
         iso_paths.append(iso_path)
     return iso_paths
+
+
+def parse_folder_arg(folder_str: str) -> tuple:
+    """Parse folder argument into (path, is_readonly).
+
+    Supports:
+        /path/to/folder      -> (/path/to/folder, True)
+        /path/to/folder:rw   -> (/path/to/folder, False)
+        /path/to/folder:ro   -> (/path/to/folder, True)
+    """
+    if folder_str.endswith(":rw"):
+        return folder_str[:-3], False
+    elif folder_str.endswith(":ro"):
+        return folder_str[:-3], True
+    else:
+        return folder_str, True  # Default to read-only
+
+
+def get_fat_folders(folders: list, start_index: int = 10) -> list:
+    """Build QEMU drive arguments for FAT folder mounts.
+
+    Args:
+        folders: List of folder strings (path with optional :rw/:ro suffix)
+        start_index: Starting drive index (default 10 to avoid conflicts with main drives)
+
+    Returns:
+        List of QEMU -drive arguments
+    """
+    if not folders:
+        return []
+
+    drives = []
+    for i, folder_str in enumerate(folders):
+        folder_path, readonly = parse_folder_arg(folder_str)
+        abs_path = os.path.abspath(folder_path)
+
+        if not os.path.exists(abs_path):
+            print(f"Warning: Folder not found, skipping: {folder_path}")
+            continue
+
+        if not os.path.isdir(abs_path):
+            print(f"Warning: Not a directory, skipping: {folder_path}")
+            continue
+
+        mode = "ro" if readonly else "rw"
+        drive_index = start_index + i
+
+        # QEMU FAT driver: appears as a removable FAT drive in guest
+        drives += [
+            "-drive",
+            f"file=fat:{mode}:{abs_path},index={drive_index},format=raw,media=disk,if=virtio",
+        ]
+
+    return drives
 
 
 def parse_port_mapping(port_str: str) -> tuple:
@@ -455,7 +517,8 @@ def main():
     sudo, drive, display = identify_image_types(disk_images, defaults, argparsed.fixed_size)
     port_fwd = add_ports(argparsed.ports_passthrough, argparsed.port, defaults)
 
-    vfat_drive = get_vfat(not_argparsed)
+    # Handle FAT folder mounts
+    fat_drives = get_fat_folders(argparsed.folder)
     bios, accel = get_bios_and_acceleration(os_families)
     if argparsed.no_efi:
         bios = None
@@ -490,7 +553,7 @@ def main():
         qemu_args,
         drive,
         port_fwd,
-        vfat_drive,
+        fat_drives,
         display,
         ["-snapshot"] if argparsed.snapshot else [],
     ]
