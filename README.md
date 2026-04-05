@@ -130,6 +130,15 @@ qe vm.qcow2 --port 8080:80
 # Use default ports (-p) plus custom port
 qe vm.qcow2 -p --port 3306:3306
 
+# Mount folder as FAT drive (read-only)
+qe vm.qcow2 -f ./shared
+
+# Mount folder as FAT drive (read-write)
+qe vm.qcow2 -f ./shared:rw
+
+# Mount multiple folders
+qe vm.qcow2 -f ./drivers -f ./shared:rw
+
 # Print QEMU command without running
 qe image.qcow2 -n
 ```
@@ -184,7 +193,7 @@ QE looks for a configuration file at `~/.config/qe/config.json`. This file is cr
 - [x] image creation if not exists
 - [x] config in json
 - [x] -display sdl if windows image
-- [ ] fat folders
+- [x] fat folders
 - [ ] usb device selection and passthrough
 - [x] move all handles to argparse instead of sys.argv
 - [ ] MacOS support
