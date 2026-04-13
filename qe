@@ -79,7 +79,7 @@ gl_defaults = {
     "image_size_to_create": DEFAULT_IMAGE_SIZE,
     "ports_passthrough": DEFAULT_PORTS,
 }
-script_options_to_exclude_from_qemu_args = ["-u", "-f", "-n", "-c"]
+script_options_to_exclude_from_qemu_args = ["-u"]
 # for UEFI and accelerator
 os_families = {
     "linux": {
@@ -494,25 +494,6 @@ def get_bios_and_acceleration(os_families: dict) -> tuple:
         bios = file_path
 
     return bios, accel
-
-
-def get_vfat(args: list) -> list:
-    # TODO - vfat folder
-    # currently doesn't work reliably
-    if "-f" in args:
-        vfat_index = args.index("-f")
-        if vfat_index < len(args) - 1:
-            vfat_folder = os.path.abspath(args[vfat_index + 1])
-            vfat_drive = [
-                "-drive",
-                f"file=fat:ro:{vfat_folder},index=9,format=raw,media=disk,if=virtio",
-            ]
-        else:
-            print("Missing folder path for -f option.")
-            exit()
-    else:
-        vfat_drive = []
-    return vfat_drive
 
 
 def main():
