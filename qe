@@ -287,6 +287,17 @@ def parse_folder_arg(folder_str: str) -> tuple:
         return folder_str, True  # Default to read-only
 
 
+def get_folder_size(path: str) -> int:
+    """Calculate total size of a directory in bytes."""
+    total = 0
+    for dirpath, dirnames, filenames in os.walk(path):
+        for f in filenames:
+            fp = os.path.join(dirpath, f)
+            if os.path.exists(fp):
+                total += os.path.getsize(fp)
+    return total
+
+
 def get_fat_folders(folders: list, start_index: int = 10) -> list:
     """Build QEMU drive arguments for FAT folder mounts.
 
@@ -316,10 +327,15 @@ def get_fat_folders(folders: list, start_index: int = 10) -> list:
         mode = "ro" if readonly else "rw"
         drive_index = start_index + i
 
+        # Calculate folder size to determine FAT type
+        folder_size = get_folder_size(abs_path)
+        # FAT16 limit is ~500MB, use FAT32 for larger folders
+        fat_type = ",fat-type=32" if folder_size > 400 * 1024 * 1024 else ""
+
         # QEMU FAT driver: appears as a removable FAT drive in guest
         drives += [
             "-drive",
-            f"file=fat:{mode}:{abs_path},index={drive_index},format=raw,media=disk,if=virtio",
+            f"file=fat:{mode}:{abs_path}{fat_type},index={drive_index},format=raw,media=disk,if=virtio",
         ]
 
     return drives
