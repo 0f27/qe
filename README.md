@@ -148,9 +148,57 @@ qe vm.qcow2 --usb bus=1,addr=4
 # Select a USB device interactively
 qe vm.qcow2 -u
 
+# Pass through several USB devices
+qe vm.qcow2 --usb 046d:c534 --usb 1050:0407
+
 # Print QEMU command without running
 qe image.qcow2 -n
 ```
+
+### USB device selection and passthrough
+
+QE can pass host USB devices directly into the guest with `-u` / `--usb`.
+
+Interactive selection:
+
+```bash
+qe vm.qcow2 -u
+```
+
+QE will show devices from `lsusb` and ask which device number to pass through.
+
+Pass through by vendor and product ID:
+
+```bash
+qe vm.qcow2 --usb 046d:c534
+```
+
+Pass through by host USB bus and address:
+
+```bash
+qe vm.qcow2 --usb bus=1,addr=4
+```
+
+Pass through using QEMU-style IDs:
+
+```bash
+qe vm.qcow2 --usb vendorid=0x046d,productid=0xc534
+```
+
+Pass through multiple USB devices:
+
+```bash
+qe vm.qcow2 --usb 046d:c534 --usb bus=1,addr=4
+```
+
+Use `lsusb` to find vendor/product IDs and bus/device numbers:
+
+```bash
+lsusb
+# Bus 001 Device 004: ID 046d:c534 Logitech, Inc. Unifying Receiver
+```
+
+USB passthrough may require access to `/dev/bus/usb/...`. If QEMU cannot open the device, run QE with suitable permissions or configure udev rules for your user.
 
 ## Configuration
 
