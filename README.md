@@ -63,10 +63,16 @@ qe vm.qcow2 -f ./shared:rw
 qe vm.qcow2 -f ./drivers -f ./shared:rw
 ```
 
-Forward ports from host to guest:
+Expose services running in the guest VM on host ports. Port mappings use `HOST:GUEST`:
 
 ```bash
+# Web server runs in the VM on port 80, open it from the host at http://127.0.0.1:8080
 qe vm.qcow2 --port 8080:80
+
+# SSH runs in the VM on port 22, connect from the host with: ssh -p 2222 user@127.0.0.1
+qe vm.qcow2 --port 2222:22
+
+# Use default service mappings (-p) and add another custom mapping
 qe vm.qcow2 -p --port 3306:3306
 ```
 
