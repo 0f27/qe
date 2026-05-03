@@ -408,6 +408,8 @@ def extract_ova(ova_path: str) -> str:
 
 def get_image_format(image_path: str) -> str:
     """Get QEMU format string for image file."""
+    if image_path.startswith("/dev/"):
+        return "raw"
     formats_found = [fmt for ext, fmt in formats.items() if image_path.endswith(ext)]
     if not formats_found:
         raise ValueError(f"Unknown image format for: {image_path}")
