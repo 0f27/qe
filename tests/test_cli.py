@@ -124,6 +124,18 @@ def test_main_ports_and_fat_folder_are_included(qe_module, tmp_path, monkeypatch
     )
 
 
+def test_main_usb_passthrough_is_included(qe_module, tmp_path, monkeypatch, capsys):
+    image = tmp_path / "vm.qcow2"
+    image.write_bytes(b"image")
+
+    run_main(qe_module, monkeypatch, tmp_path, [str(image), "--usb", "046d:c534", "-n"])
+
+    command = printed_command(capsys)
+    assert "-device" in command
+    assert "qemu-xhci" in command
+    assert "usb-host,vendorid=0x046d,productid=0xc534" in command
+
+
 def test_main_size_overrides_created_image_size(qe_module, tmp_path, monkeypatch, capsys):
     image = tmp_path / "new.qcow2"
 
