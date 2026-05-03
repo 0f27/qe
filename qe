@@ -121,6 +121,22 @@ def set_defaults(defaults: dict) -> dict:
 
 def parse_args() -> tuple:
     """Parse command line arguments."""
+    script_short_options = ("-s", "-c", "-l", "-p", "-i", "-f", "-n", "-u")
+    qemu_arg_placeholders = {}
+    argv = []
+    for i, arg in enumerate(os.sys.argv[1:]):
+        if (
+            arg.startswith("-")
+            and not arg.startswith("--")
+            and len(arg) > 2
+            and arg[:2] in script_short_options
+        ):
+            placeholder = f"-__qe_qemu_arg_{i}"
+            qemu_arg_placeholders[placeholder] = arg
+            argv.append(placeholder)
+        else:
+            argv.append(arg)
+
     parser = argparse.ArgumentParser(
         description="QE - Quick Emulator: A simple wrapper for QEMU to launch VMs from the command line.",
         epilog="Examples:\n"
@@ -218,8 +234,11 @@ def parse_args() -> tuple:
         help="Print QEMU command without running",
     )
 
-    argparsed, not_argparsed = parser.parse_known_args()
-    not_argparsed = [parser.prog] + not_argparsed
+    argparsed, not_argparsed = parser.parse_known_args(argv)
+    not_argparsed = [
+        parser.prog,
+        *[qemu_arg_placeholders.get(arg, arg) for arg in not_argparsed],
+    ]
 
     return argparsed, not_argparsed
 
