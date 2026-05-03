@@ -3,62 +3,109 @@
 > I use it myself, so expect minor bugs and hidden features.
 > If you find something, feel free to open issue or create pull request.
 
-## Examples
+## Usage Examples
 
-Run virtual machine image file from CLI. Just like this:
+Run `qe --help` for full usage information.
+
 ```bash
-qe w11.vmdk
+qe [images] [options] [qemu-system-* options]
 ```
 
-The same for live iso:
+Run an existing VM image or live ISO:
+
 ```bash
+qe w11.vmdk
 qe Fedora-KDE-Live-x86_64-40-1.14.iso
 ```
 
-Quickly create an image and start VM installation from iso with just a single command:
+Create a new image if it does not exist and start installation from ISO:
+
 ```bash
-# ubuntu.qcow2 will be created with default size if not exists
-qe ubuntu.qcow2 ~/Downloads/ubuntu-24.04-beta-desktop-amd64.iso
+qe ubuntu.qcow2 ~/Downloads/ubuntu-24.04-desktop-amd64.iso
+qe new.qcow2 --size 20G
 ```
 
-Generate Qemu command to save or edit later, with `-n` option:
+Run without saving disk changes, or without GUI:
+
+```bash
+qe arch.qcow2 -s
+qe Fedora-Live.iso -c
+```
+
+Use UEFI by default, or boot in legacy BIOS mode:
+
+```bash
+qe MX.qcow2 --no-efi
+```
+
+Pass QEMU arguments through QE:
+
+```bash
+qe kali.qcow2 -s -net none
+```
+
+Generate a QEMU command without running it:
+
 ```bash
 qe windows-server-2022.vhd -n
 # qemu-system-x86_64 -enable-kvm -smp 2 -m 4G -bios /usr/share/ovmf/x64/OVMF.fd -drive file=windows-server-2022.vhd,format=vpc,index=0,media=disk -display sdl
 ```
 
-Avoid changing VM file with `-s` (`--snapshot`) option and do all your crazy experiments!
+Mount files and folders:
+
 ```bash
-qe arch.qcow2 -s
+# Create ./drivers.iso from a folder or file and mount it
+qe vm.qcow2 -i ./drivers
+
+# Mount host folders as FAT drives
+qe vm.qcow2 -f ./shared
+qe vm.qcow2 -f ./shared:rw
+qe vm.qcow2 -f ./drivers -f ./shared:rw
 ```
 
-Use `qemu-system-x86_64` arguments as well as script's own:
+Forward ports from host to guest:
+
 ```bash
-qe kali.qcow2 -s -net none
+qe vm.qcow2 --port 8080:80
+qe vm.qcow2 -p --port 3306:3306
 ```
 
-Pack your file or folder to iso and mount with image:
-```bash
-# ./volatility3.iso will be created with folder contents and mounted
-qe Fedora-KDE-Live-x86_64-40-1.14.iso -i ./volatility3
-```
+Run a physical HDD, SSD, or NVMe device as a VM:
 
-Run your HDD/SSD/NVME as a virtual machine!
 ```bash
 qe /dev/sda --snapshot
 ```
 
-UEFI is the default! But you can run in legacy mode too:
-```bash
-qe MX.qcow2 --no-efi
-```
+Create and run [Ventoy](https://ventoy.net/en/index.html) [vtoyboot](https://ventoy.net/en/plugin_vtoyboot.html) and [vhdboot](https://ventoy.net/en/plugin_vhdboot.html) images to launch from USB:
 
-Create and run [Ventoy](https://ventoy.net/en/index.html) [vtoyboot](https://ventoy.net/en/plugin_vtoyboot.html) and [vhdboot](https://ventoy.net/en/plugin_vhdboot.html) images to launch from your USB:
 ```bash
-# UEFI and fixed image size as you need for Ventoy
 qe w11.vhd.vtoy Win11_23H2_English_x64v2.iso -i ./drivers_and_software
 mv w11.vhd.vtoy w11.vhd
 ```
+
+Pass host USB devices directly into the guest with `-u` / `--usb`:
+
+```bash
+# Select interactively from lsusb output
+qe vm.qcow2 -u
+
+# Pass by vendor/product ID, host bus/address, or QEMU-style IDs
+qe vm.qcow2 --usb 046d:c534
+qe vm.qcow2 --usb bus=1,addr=4
+qe vm.qcow2 --usb vendorid=0x046d,productid=0xc534
+
+# Pass through several USB devices
+qe vm.qcow2 --usb 046d:c534 --usb 1050:0407
+```
+
+Use `lsusb` to find vendor/product IDs and bus/device numbers:
+
+```bash
+lsusb
+# Bus 001 Device 004: ID 046d:c534 Logitech, Inc. Unifying Receiver
+```
+
+USB passthrough may require access to `/dev/bus/usb/...`. If QEMU cannot open the device, run QE with suitable permissions or configure udev rules for your user.
 
 ## Installation
 
@@ -97,108 +144,6 @@ mkdir -p ~/.local/bin
 wget https://raw.githubusercontent.com/0f27/qe/main/qe -O ~/.local/bin/qe
 chmod +x ~/.local/bin/qe
 ```
-
-## Usage
-
-Run `qe --help` for full usage information.
-
-```bash
-qe [images] [options]
-```
-
-**Quick examples:**
-
-```bash
-# Run an existing VM
-qe ubuntu.qcow2
-
-# Create and run a new VM with specific size
-qe new.qcow2 --size 20G
-
-# Run a live ISO with console only (no GUI)
-qe Fedora-Live.iso -c
-
-# Run with snapshot mode (changes not saved)
-qe windows.qcow2 -s
-
-# Mount a folder as ISO
-qe vm.qcow2 -i ./drivers
-
-# Forward custom port (host:guest)
-qe vm.qcow2 --port 8080:80
-
-# Use default ports (-p) plus custom port
-qe vm.qcow2 -p --port 3306:3306
-
-# Mount folder as FAT drive (read-only)
-qe vm.qcow2 -f ./shared
-
-# Mount folder as FAT drive (read-write)
-qe vm.qcow2 -f ./shared:rw
-
-# Mount multiple folders
-qe vm.qcow2 -f ./drivers -f ./shared:rw
-
-# Pass through a USB device by vendor and product ID
-qe vm.qcow2 --usb 046d:c534
-
-# Pass through a USB device by host bus and address
-qe vm.qcow2 --usb bus=1,addr=4
-
-# Select a USB device interactively
-qe vm.qcow2 -u
-
-# Pass through several USB devices
-qe vm.qcow2 --usb 046d:c534 --usb 1050:0407
-
-# Print QEMU command without running
-qe image.qcow2 -n
-```
-
-### USB device selection and passthrough
-
-QE can pass host USB devices directly into the guest with `-u` / `--usb`.
-
-Interactive selection:
-
-```bash
-qe vm.qcow2 -u
-```
-
-QE will show devices from `lsusb` and ask which device number to pass through.
-
-Pass through by vendor and product ID:
-
-```bash
-qe vm.qcow2 --usb 046d:c534
-```
-
-Pass through by host USB bus and address:
-
-```bash
-qe vm.qcow2 --usb bus=1,addr=4
-```
-
-Pass through using QEMU-style IDs:
-
-```bash
-qe vm.qcow2 --usb vendorid=0x046d,productid=0xc534
-```
-
-Pass through multiple USB devices:
-
-```bash
-qe vm.qcow2 --usb 046d:c534 --usb bus=1,addr=4
-```
-
-Use `lsusb` to find vendor/product IDs and bus/device numbers:
-
-```bash
-lsusb
-# Bus 001 Device 004: ID 046d:c534 Logitech, Inc. Unifying Receiver
-```
-
-USB passthrough may require access to `/dev/bus/usb/...`. If QEMU cannot open the device, run QE with suitable permissions or configure udev rules for your user.
 
 ## Configuration
 
