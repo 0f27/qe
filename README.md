@@ -188,6 +188,14 @@ QE looks for a configuration file at `~/.config/qe/config.json`. This file is cr
 }
 ```
 
+## Tests
+
+Run the automatic tests with:
+
+```bash
+pytest
+```
+
 ## TODO
 
 - [x] image creation if not exists
@@ -205,7 +213,7 @@ QE looks for a configuration file at `~/.config/qe/config.json`. This file is cr
 - [ ] config.json documentation
 - [ ] support for multiple iso creation
 - [x] refactor
-- [ ] tests!
+- [x] tests!
 - [ ] add network setup to connect several VM instances
 - [x] beautify --help
 - [x] add flag for fixed size images
