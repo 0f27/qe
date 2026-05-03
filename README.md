@@ -139,6 +139,15 @@ qe vm.qcow2 -f ./shared:rw
 # Mount multiple folders
 qe vm.qcow2 -f ./drivers -f ./shared:rw
 
+# Pass through a USB device by vendor and product ID
+qe vm.qcow2 --usb 046d:c534
+
+# Pass through a USB device by host bus and address
+qe vm.qcow2 --usb bus=1,addr=4
+
+# Select a USB device interactively
+qe vm.qcow2 -u
+
 # Print QEMU command without running
 qe image.qcow2 -n
 ```
@@ -202,7 +211,7 @@ pytest
 - [x] config in json
 - [x] -display sdl if windows image
 - [x] fat folders
-- [ ] usb device selection and passthrough
+- [x] usb device selection and passthrough
 - [x] move all handles to argparse instead of sys.argv
 - [ ] MacOS support
 - [x] installation oneliner

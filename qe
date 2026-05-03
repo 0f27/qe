@@ -8,6 +8,7 @@ import urllib.request
 from platform import machine, system
 from subprocess import run
 import argparse
+import re
 
 os_family = system().lower()
 
@@ -63,7 +64,7 @@ Script options:
 --size SIZE    specify image size (e.g., 20G, 512M)
 -n             generate command and print without running
 
--u             select USB device (not implemented yet, TODO)
+-u --usb       pass through USB device (use VENDOR:PRODUCT, bus=N,addr=N, or no value to select)
 -f             FAT folder, read only (not implemented yet, TODO)
 
 --help         display help message
@@ -223,6 +224,22 @@ def parse_args() -> tuple:
         type=str,
         action="append",
         help="Mount host folder as FAT drive (add :rw for read-write). Can be used multiple times",
+    )
+
+    # USB Passthrough
+    usb_group = parser.add_argument_group("USB Passthrough")
+    usb_group.add_argument(
+        "-u",
+        "--usb",
+        nargs="?",
+        const="select",
+        metavar="SPEC",
+        type=str,
+        action="append",
+        help=(
+            "Pass through USB device. Use VENDOR:PRODUCT (046d:c534), "
+            "bus=N,addr=N, vendorid=0x046d,productid=0xc534, or no value to select"
+        ),
     )
 
     # Output
@@ -398,6 +415,130 @@ def add_ports(use_defaults: bool, custom_ports: list, defaults: dict) -> list:
     return ["-nic", f"user,{port_string}"]
 
 
+def parse_lsusb_line(line: str) -> dict:
+    """Parse one lsusb output line into a USB device dictionary."""
+    match = re.match(
+        r"Bus\s+(?P<bus>\d+)\s+Device\s+(?P<device>\d+):\s+"
+        r"ID\s+(?P<vendor_id>[0-9a-fA-F]{4}):(?P<product_id>[0-9a-fA-F]{4})"
+        r"(?:\s+(?P<description>.*))?$",
+        line.strip(),
+    )
+    if not match:
+        raise ValueError(f"Unable to parse lsusb output line: {line}")
+
+    device = match.groupdict()
+    device["description"] = device["description"] or ""
+    return device
+
+
+def list_usb_devices() -> list:
+    """Return USB devices discovered with lsusb."""
+    result = run(["lsusb"], capture_output=True, text=True)
+    if result.returncode != 0:
+        raise RuntimeError("Unable to list USB devices with lsusb")
+
+    devices = []
+    for line in result.stdout.splitlines():
+        if line.strip():
+            devices.append(parse_lsusb_line(line))
+    return devices
+
+
+def select_usb_devices(devices: list) -> list:
+    """Prompt the user to select USB devices and return QEMU usb-host args."""
+    if not devices:
+        raise ValueError("No USB devices found")
+
+    for i, device in enumerate(devices, start=1):
+        label = (
+            f"{device['vendor_id']}:{device['product_id']} "
+            f"Bus {device['bus']} Device {device['device']}"
+        )
+        if device["description"]:
+            label += f" {device['description']}"
+        print(f"{i}. {label}")
+
+    selected = input("Select USB device number(s), comma separated: ").strip()
+    if not selected:
+        raise ValueError("No USB device selected")
+
+    usb_args = []
+    for item in selected.split(","):
+        try:
+            index = int(item.strip())
+        except ValueError as exc:
+            raise ValueError(f"Invalid USB selection: {item}") from exc
+
+        if index < 1 or index > len(devices):
+            raise ValueError(f"USB selection out of range: {index}")
+
+        device = devices[index - 1]
+        usb_args.append(
+            f"usb-host,hostbus={int(device['bus'])},hostaddr={int(device['device'])}"
+        )
+
+    return usb_args
+
+
+def parse_usb_spec(spec: str) -> str:
+    """Parse a USB passthrough spec into a QEMU usb-host device argument."""
+    vendor_product = re.fullmatch(
+        r"(?P<vendor>[0-9a-fA-F]{4}):(?P<product>[0-9a-fA-F]{4})", spec
+    )
+    if vendor_product:
+        return (
+            "usb-host,"
+            f"vendorid=0x{vendor_product.group('vendor').lower()},"
+            f"productid=0x{vendor_product.group('product').lower()}"
+        )
+
+    bus_addr = re.fullmatch(r"bus=(?P<bus>\d+),addr=(?P<addr>\d+)", spec)
+    if bus_addr:
+        return (
+            "usb-host,"
+            f"hostbus={int(bus_addr.group('bus'))},"
+            f"hostaddr={int(bus_addr.group('addr'))}"
+        )
+
+    full_spec = re.fullmatch(
+        r"vendorid=0x(?P<vendor>[0-9a-fA-F]{4}),"
+        r"productid=0x(?P<product>[0-9a-fA-F]{4})",
+        spec,
+    )
+    if full_spec:
+        return (
+            "usb-host,"
+            f"vendorid=0x{full_spec.group('vendor').lower()},"
+            f"productid=0x{full_spec.group('product').lower()}"
+        )
+
+    raise ValueError(
+        f"Invalid USB spec '{spec}'. Expected VENDOR:PRODUCT, bus=N,addr=N, "
+        "or vendorid=0xNNNN,productid=0xNNNN"
+    )
+
+
+def get_usb_devices(usb_args: list) -> list:
+    """Build QEMU USB passthrough arguments."""
+    if not usb_args:
+        return []
+
+    devices = []
+    for spec in usb_args:
+        if spec == "select":
+            devices.extend(select_usb_devices(list_usb_devices()))
+        else:
+            devices.append(parse_usb_spec(spec))
+
+    if not devices:
+        return []
+
+    qemu_args = ["-device", "qemu-xhci"]
+    for device in devices:
+        qemu_args.extend(["-device", device])
+    return qemu_args
+
+
 def is_windows_image(image_path: str) -> bool:
     """Check if image appears to be a Windows VM based on filename."""
     name_lower = image_path.lower()
@@ -537,6 +678,7 @@ def main():
 
     # Handle FAT folder mounts
     fat_drives = get_fat_folders(argparsed.folder)
+    usb_devices = get_usb_devices(argparsed.usb)
     bios, accel = get_bios_and_acceleration(os_families)
     if argparsed.no_efi:
         bios = None
@@ -572,6 +714,7 @@ def main():
         drive,
         port_fwd,
         fat_drives,
+        usb_devices,
         display,
         ["-snapshot"] if argparsed.snapshot else [],
     ]
